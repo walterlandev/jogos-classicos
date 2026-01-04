@@ -1,0 +1,125 @@
+/* ===== TETRIS MOBILE - FOCO NO JOGO ===== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background: #000 !important;
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    padding: 5px;
+}
+
+/* 1. ÁREA DO JOGO MÁXIMA */
+#canvas {
+    border: 2px solid #00ffff;
+    background: #000;
+    height: 60vh !important; /* Aumentado para o jogo brilhar */
+    width: auto !important;
+    box-shadow: 0 0 10px #00ffff;
+    image-rendering: pixelated;
+}
+
+/* 2. HUD MINIMALISTA (Sem H3) */
+.hud {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+/* Esconde o título "PRÓXIMO" pelo CSS como você pediu */
+.hud-box h3 {
+    display: none !important;
+}
+
+.hud-box {
+    background: #000;
+    border: 1px solid #ff00ff;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+}
+
+.hud-box p {
+    font-size: 6px;
+    color: #00ffff;
+    margin-bottom: 2px;
+}
+
+.hud-box span {
+    font-size: 10px;
+}
+
+#upcoming {
+    width: 30px !important;
+    height: 30px !important;
+}
+
+/* 3. BOTÃO INICIAR PEQUENO E CENTRALIZADO */
+#start {
+    position: absolute;
+    top: 30%; /* Fica dentro da área do canvas */
+    padding: 10px 20px;
+    font-family: 'Press Start 2P', cursive;
+    background: #00ff00;
+    color: #000;
+    border: none;
+    font-size: 12px;
+    border-radius: 4px;
+    z-index: 10;
+}
+
+/* 4. CONTROLES MINIATURIZADOS (Lá embaixo) */
+.controles-mobile {
+    margin-top: auto;
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-rotate, .btn-pause-mobile {
+    font-family: 'Press Start 2P', cursive;
+    background: #111;
+    border: 1px solid #fff;
+    color: #fff;
+}
+
+.btn-pause-mobile { font-size: 7px; padding: 5px; }
+.btn-rotate { font-size: 9px; padding: 8px; width: 100px; }
+
+.linha-botoes {
+    display: flex;
+    gap: 15px;
+}
+
+.linha-botoes button {
+    width: 45px; /* Botões pequenos para não roubar tela */
+    height: 45px;
+    background: #222;
+    border: 1px solid #00ffff;
+    color: #fff;
+    font-size: 18px;
+    border-radius: 5px;
+}

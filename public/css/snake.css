@@ -1,0 +1,147 @@
+/* ===== RESET E BASE ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Press Start 2P', system-ui, sans-serif;
+  background:
+    linear-gradient(rgba(0,0,0,.85), rgba(0,0,0,.9)),
+    url("../assets/jogador.png") center / cover no-repeat fixed;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* ===== HEADER (Igual ao Tetris) ===== */
+.topbar {
+  height: 70px;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.topbar h1 {
+  color: #00ffff;
+  font-size: 1rem;
+}
+
+/* ===== CONTAINER ===== */
+/* Usei a mesma estrutura de Grid 1fr 280px do seu Tetris */
+.game-area {
+  max-width: 1200px;
+  margin: auto;
+  padding: 3rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 2rem;
+  align-items: center;
+}
+
+/* ===== ÁREA DO CANVAS (Adaptada para Snake) ===== */
+#snakeGame {
+  background: #000;
+  border-radius: 12px;
+  border: 2px solid #00ffff;
+  /* O Snake costuma ser quadrado, mantendo a proporção do seu HTML (400x400) */
+  width: 400px; 
+  height: 400px;
+  display: block;
+  margin: 0 auto;
+  box-shadow:
+    0 0 20px rgba(0,255,255,.4),
+    0 0 40px rgba(255,0,255,.25);
+}
+
+/* ===== HUD (Igual ao Tetris) ===== */
+.hud {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hud-box {
+  background: rgba(0,0,0,.6);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.hud-box p {
+  font-size: 0.7rem;
+  margin-bottom: 0.8rem;
+  color: #aaa;
+  text-transform: uppercase;
+}
+
+.hud-box span {
+  font-size: 1.2rem;
+  color: #00ffff;
+  display: block;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* ===== BOTÃO INICIAR (ID: startBtn) ===== */
+#startBtn {
+  padding: 1.2rem;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8rem;
+  background: #00ffff;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 0 #008b8b;
+  width: 100%; /* Ocupa a largura da HUD */
+  text-transform: uppercase;
+}
+
+#startBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #008b8b;
+  background: #ffffff;
+}
+
+#startBtn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 #008b8b;
+}
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 800px) {
+  .game-area {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    justify-items: center;
+  }
+  
+  #snakeGame {
+    width: 90vw;
+    height: 90vw;
+  }
+  
+  .hud {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  
+  .hud-box {
+    flex: 1;
+    min-width: 120px;
+    padding: 1rem;
+  }
+
+  #startBtn {
+    width: 100%;
+    max-width: 300px;
+  }
+}

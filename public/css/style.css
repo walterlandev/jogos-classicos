@@ -1,0 +1,179 @@
+/* ===== RESET E BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #050505 url("../assets/jogador.png") no-repeat center center fixed;
+    background-size: cover;
+    /* Camada de contraste para o texto não sumir no fundo */
+    box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.85);
+    color: #fff;
+    font-family: 'Press Start 2P', cursive;
+    line-height: 1.6;
+}
+
+/* ===== HEADER / TOPBAR (Ajuste de Login) ===== */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+    background: rgba(0, 0, 0, 0.95);
+    border-bottom: 3px solid #ff00ff; /* Rosa Neon */
+    box-shadow: 0 4px 15px rgba(255, 0, 255, 0.4);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    font-size: 16px;
+    color: #00ffff; /* Ciano Neon */
+    text-shadow: 0 0 10px #00ffff;
+}
+
+nav button {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 9px;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: 0.3s;
+    border: 2px solid #00ffff;
+    background: transparent;
+    color: #00ffff;
+}
+
+nav button:hover {
+    background: #00ffff;
+    color: #000;
+}
+
+.btn-sair {
+    border-color: #ff4444;
+    color: #ff4444;
+}
+
+.btn-sair:hover {
+    background: #ff4444;
+    color: #fff;
+}
+
+/* ===== CONTEÚDO PRINCIPAL (CARDS) ===== */
+.hero-content {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.hero-content h2 {
+    text-align: center;
+    margin-bottom: 40px;
+    color: #ffff00;
+    font-size: 20px;
+}
+
+.game-wrapper {
+    margin-bottom: 50px;
+}
+
+.game-card {
+    display: flex;
+    background: rgba(15, 15, 15, 0.9);
+    border: 3px solid #00ffff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+/* Lado da Imagem */
+.game-link-wrapper {
+    flex: 0 0 400px; /* Largura fixa para a imagem no PC */
+    text-decoration: none;
+    position: relative;
+}
+
+.game-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-right: 3px solid #00ffff;
+}
+
+.game-label {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 255, 0, 0.8);
+    color: #000;
+    padding: 10px;
+    text-align: center;
+    font-size: 10px;
+}
+
+/* Lado do Ranking */
+.ranking-side {
+    flex: 1;
+    padding: 25px;
+}
+
+.ranking-side h3 {
+    color: #ff00ff;
+    font-size: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+}
+
+th {
+    color: #00ffff;
+    text-align: left;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+
+td {
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Cores do Top 3 */
+tbody tr:nth-child(1) { color: #ffd700; }
+tbody tr:nth-child(2) { color: #c0c0c0; }
+tbody tr:nth-child(3) { color: #cd7f32; }
+
+/* ===== MODAIS (DIALOG) ===== */
+dialog {
+    background: #111;
+    color: #fff;
+    border: 3px solid #ff00ff;
+    padding: 30px;
+    margin: auto;
+    border-radius: 10px;
+    font-family: 'Press Start 2P', cursive;
+}
+
+dialog::backdrop {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+form label { display: block; margin: 15px 0 5px; font-size: 9px; color: #00ffff; }
+form input { width: 100%; padding: 10px; background: #222; border: 1px solid #fff; color: #fff; margin-bottom: 10px; }
+form button.primary { background: #00ff00; color: #000; border: none; padding: 10px; width: 100%; margin-top: 10px; }
+
+/* ===== RESPONSIVIDADE ===== */
+@media (max-width: 900px) {
+    header { flex-direction: column; height: auto; gap: 15px; padding: 20px; }
+    .game-card { flex-direction: column; }
+    .game-link-wrapper { flex: 0 0 auto; width: 100%; }
+    .game-preview img { border-right: none; border-bottom: 3px solid #00ffff; }
+}

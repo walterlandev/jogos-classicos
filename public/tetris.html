@@ -1,0 +1,78 @@
+<head>
+  <meta charset="UTF-8">
+  <title>Jogos Clássicos – Tetris Color</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="css/style.css">
+
+  <script>
+    (function() {
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        const head = document.getElementsByTagName('head')[0];
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        
+        // Versão aleatória para forçar o navegador a ler o arquivo novo
+        const v = Math.random(); 
+        link.href = isMobile ? 'css/tetris-cel.css?v=' + v : 'css/tetris-pc.css?v=' + v;
+        
+        head.appendChild(link);
+        console.log("CSS Carregado: " + link.href);
+    })();
+  </script>
+</head>
+<body>
+
+<header class="topbar">
+  <h1>Tetris Color</h1>
+  <nav style="display: flex; align-items: center; gap: 20px;">
+    <div id="statusLogado" class="user-bar" style="display: none;">
+        <span>JOGADOR: <strong id="userName">...</strong></span>
+        <button onclick="window.logout()" class="btn-sair-mini">SAIR</button>
+    </div>
+    <div id="botoesDeslogado">
+        <a href="index.html" style="font-size: 10px; color: yellow; text-decoration: none;">[ FAZER LOGIN ]</a>
+    </div>
+    <a href="index.html" style="font-size: 10px; color: white; text-decoration: none;">⬅ VOLTAR</a>
+  </nav>
+</header>
+
+<main class="game-container">
+  <section class="game-area">
+    <canvas id="canvas"></canvas>
+    
+    <div class="controles-mobile">
+        <button data-command="pause" class="btn-pause-mobile">PAUSAR</button>
+        <button data-command="rotate" class="btn-rotate">GIRAR</button>
+        
+        <div class="linha-botoes">
+            <button data-command="left">←</button>
+            <button data-command="down">↓</button>
+            <button data-command="right">→</button>
+        </div>
+    </div>
+  </section>
+
+  <aside class="hud">
+    <div class="hud-box" id="box-next">
+      <h3>PRÓXIMO</h3>
+      <canvas id="upcoming"></canvas>
+    </div>
+    <div class="hud-box" id="box-score">
+      <p>SCORE</p>
+      <span id="score">00000</span>
+    </div>
+    <div class="hud-box" id="box-level">
+      <p>NÍVEL</p>
+      <span id="level">1</span>
+    </div>
+    <button id="start" onclick="window.play()">▶ INICIAR</button>
+  </aside>
+</main>
+
+<script type="module" src="js/auth.js"></script>
+<script src="js/tetris.js"></script>
+
+</body>
+</html>

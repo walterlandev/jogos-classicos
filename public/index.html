@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogos Clássicos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <h1>Jogos Clássicos</h1>
+  
+  <nav>
+    <div id="botoesDeslogado">
+        <button onclick="openLogin()">Entrar</button>
+        <button onclick="openRegister()">Criar conta</button>
+    </div>
+
+    <div id="statusLogado" style="display: none; align-items: center; gap: 15px;">
+        <span>Olá, <strong id="userName">...</strong></span>
+        <button onclick="logout()" class="btn-sair">Sair</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-content">
+      <h2>Reviva os Clássicos</h2>
+      
+      <div class="game-wrapper">
+        <div class="game-card">
+          <a href="tetris.html" class="game-link-wrapper">
+            <div class="game-preview">
+              <img src="assets/jogo.png" alt="Jogar Tetris">
+              <span class="game-label">JOGAR TETRIS</span>
+            </div>
+          </a>
+
+          <div class="ranking-side">
+            <h3>🏆 Top 10 TETRIS</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 60px;">POS</th>
+                  <th>JOGADOR</th>
+                  <th>PONTOS</th>
+                </tr>
+              </thead>
+              <tbody id="rankingTetris"> <tr><td colspan="3">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-wrapper">
+        <div class="game-card">
+          <a href="snake.html" class="game-link-wrapper">
+            <div class="game-preview">
+              <img src="assets/snake.png" alt="Jogar snake">
+              <span class="game-label">JOGAR snake</span>
+            </div>
+          </a>
+
+          <div class="ranking-side">
+            <h3>🏆 Top 10 SNAKE</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 60px;">POS</th>
+                  <th>JOGADOR</th>
+                  <th>PONTOS</th>
+                </tr>
+              </thead>
+              <tbody id="rankingSnake"> <tr><td colspan="3">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<dialog id="loginModal">
+  <h2>Entrar</h2>
+  <form id="loginForm">
+    <label>E-mail</label>
+    <input id="loginEmail" type="email" required>
+    <label>Senha</label>
+    <input id="loginSenha" type="password" required>
+    <button type="submit" class="primary">Entrar</button>
+    <button type="button" onclick="document.getElementById('loginModal').close()">Sair</button>
+  </form>
+</dialog>
+
+<dialog id="registerModal">
+  <h2>Criar conta</h2>
+  <form id="registerForm">
+    <label>Apelido (Nickname)</label>
+    <input id="regNickname" type="text" placeholder="Como aparecerá no ranking" required>
+    <label>E-mail</label>
+    <input id="regEmail" type="email" required>
+    <label>Senha</label>
+    <input id="regSenha" type="password" required>
+    <button type="submit" class="primary">Cadastrar e Jogar</button>
+    <button type="button" onclick="document.getElementById('registerModal').close()">Cancelar</button>
+  </form>
+</dialog>
+
+<footer>
+  <p>© 2026 – Jogos Clássicos WAS</p>
+</footer>
+
+<script type="module" src="js/auth.js"></script>
+
+</body>
+</html>

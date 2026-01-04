@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Jogos Clássicos – Snake</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/snake.css">
+  
+  <style>
+    /* Ajustes de Layout e Mobile */
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      font-size: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px 15px;
+      border-radius: 5px;
+      border: 1px solid #333;
+    }
+    .user-bar strong { color: #00ff00; }
+    
+    .btn-sair-mini {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 8px;
+      cursor: pointer;
+    }
+
+    /* ===== CONTROLES MOBILE (D-PAD) ===== */
+    .controles-mobile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 30px;
+      gap: 10px;
+      user-select: none;
+    }
+
+    .linha-meio {
+      display: flex;
+      gap: 30px;
+    }
+
+    .controles-mobile button {
+      width: 75px;
+      height: 75px;
+      background: rgba(17, 17, 17, 0.9);
+      color: #00ffff;
+      border: 3px solid #00ffff;
+      border-radius: 50%;
+      font-size: 30px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+      /* Importante para não dar lag no toque */
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .controles-mobile button:active {
+      background: #00ffff;
+      color: #000;
+      transform: scale(0.95);
+    }
+
+    /* Esconde controles no Desktop */
+    @media (min-width: 801px) {
+      .controles-mobile {
+        display: none;
+      }
+    }
+
+    /* Ajuste do Canvas para telas pequenas */
+    #snakeGame {
+      max-width: 95vw;
+      max-height: 50vh;
+      height: auto;
+      touch-action: none; /* Impede scroll ao tocar no jogo */
+      display: block;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <h1>Snake Neon</h1>
+
+  <nav style="display: flex; align-items: center; gap: 20px;">
+    <div id="statusLogado" class="user-bar" style="display: none;">
+        <span>JOGADOR: <strong id="userName">...</strong></span>
+        <span>RECORDE: <strong id="userScore">0</strong></span>
+        <button onclick="logout()" class="btn-sair-mini">SAIR</button>
+    </div>
+    
+    <div id="botoesDeslogado">
+        <a href="index.html" style="font-size: 10px; color: yellow; text-decoration: none;">[ FAZER LOGIN ]</a>
+    </div>
+
+    <a href="index.html" style="font-size: 10px; color: white; text-decoration: none;">⬅ VOLTAR</a>
+  </nav>
+</header>
+
+<main class="game-area"> 
+  <section class="game-canvas-container">
+    <canvas id="snakeGame" width="400" height="400">Seu navegador não suporta canvas</canvas>
+    
+    <div class="controles-mobile">
+        <button ontouchstart="handleMove(event, 'up')">↑</button>
+        <div class="linha-meio">
+            <button ontouchstart="handleMove(event, 'left')">←</button>
+            <button ontouchstart="handleMove(event, 'right')">→</button>
+        </div>
+        <button ontouchstart="handleMove(event, 'down')">↓</button>
+    </div>
+  </section>
+
+  <aside class="hud">
+      <div class="hud-box">
+        <p>PONTOS</p>
+        <span id="snakeScore">00000</span>
+      </div>
+
+      <div class="hud-box">
+        <p>MELHOR</p>
+        <span id="snakeBest">0</span>
+      </div>
+
+      <div class="hud-box">
+        <p>NÍVEL</p>
+        <span id="snakeLevel">1</span>
+      </div>
+
+      <button id="startBtn" onclick="startGame()">▶ JOGAR</button>
+  </aside>
+</main>
+
+<footer>
+  <p>© 2026 – Jogos Clássicos WAS</p>
+</footer>
+
+<script type="module" src="js/auth.js"></script>
+<script src="js/snake.js"></script>
+
+</body>
+</html>
