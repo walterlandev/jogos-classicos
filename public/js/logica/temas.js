@@ -48,18 +48,35 @@ export const TEMAS = {
             bola: '#26301f', raquete: '#26301f', texto: '#26301f', parede: '#5d6b52',
         },
     },
+    lousa: {
+        id: 'lousa',
+        nome: 'Lousa da escola',
+        descricao: 'Quadro verde, giz colorido e moldura de madeira.',
+        gratis: true,
+        nivelMinimo: 10,
+        amostra: ['#22332c', '#eef0e8', '#f2df7a', '#f2a6b8'],
+        canvas: {
+            fundo: '#22332c', vazio: null,
+            pecas: [null, '#9fd0f0', '#d6b0f2', '#f2a6b8', '#b5e3a3', '#f5c38a', '#eef0e8', '#f2df7a'],
+            cobra: '#b5e3a3', cabeca: '#eef0e8', comida: '#f2a6b8', bonus: ['#f2df7a', '#f5c38a'],
+            tijolos: ['#f2a6b8', '#f5c38a', '#f2df7a', '#b5e3a3', '#9fd0f0'],
+            bola: '#eef0e8', raquete: '#f2df7a', texto: '#eef0e8', parede: '#7a5233',
+        },
+    },
 };
 
-export const IDS_TEMAS = ['fliperama', 'cartucho', 'lcd'];
+export const IDS_TEMAS = ['fliperama', 'cartucho', 'lcd', 'lousa'];
 export const TEMA_PADRAO = 'fliperama';
 
-// Tema pago só vale se o servidor tiver liberado o item "tema:<id>".
-export function podeUsar(id, itensLiberados = []) {
+// Tema pago só vale se o servidor tiver liberado o item "tema:<id>";
+// tema com nivelMinimo só vale a partir daquele nível da conta.
+export function podeUsar(id, itensLiberados = [], nivelConta = 1) {
     const tema = Object.hasOwn(TEMAS, id) ? TEMAS[id] : null;
     if (!tema) return false;
+    if (nivelConta < (tema.nivelMinimo || 1)) return false;
     return tema.gratis || (Array.isArray(itensLiberados) && itensLiberados.includes(`tema:${id}`));
 }
 
-export function resolverTema(salvo, itensLiberados = []) {
-    return podeUsar(salvo, itensLiberados) ? salvo : TEMA_PADRAO;
+export function resolverTema(salvo, itensLiberados = [], nivelConta = 1) {
+    return podeUsar(salvo, itensLiberados, nivelConta) ? salvo : TEMA_PADRAO;
 }

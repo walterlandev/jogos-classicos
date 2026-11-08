@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { TEMAS, TEMA_PADRAO, IDS_TEMAS, podeUsar, resolverTema } from '../public/js/logica/temas.js';
 
-test('os três temas existem, são grátis e têm paleta completa', () => {
-    assert.deepEqual(IDS_TEMAS, ['fliperama', 'cartucho', 'lcd']);
+test('os quatro temas existem, são grátis e têm paleta completa', () => {
+    assert.deepEqual(IDS_TEMAS, ['fliperama', 'cartucho', 'lcd', 'lousa']);
     assert.equal(TEMA_PADRAO, 'fliperama');
     for (const id of IDS_TEMAS) {
         const c = TEMAS[id].canvas;
@@ -30,4 +30,13 @@ test('resolverTema cai no padrão quando o salvo é inválido', () => {
     assert.equal(resolverTema('cartucho'), 'cartucho');
     assert.equal(resolverTema(null), 'fliperama');
     assert.equal(resolverTema('<script>'), 'fliperama');
+});
+
+test('Lousa da escola só a partir do nível 10 da conta', () => {
+    assert.equal(TEMAS.lousa.nivelMinimo, 10);
+    assert.equal(podeUsar('lousa'), false);
+    assert.equal(podeUsar('lousa', [], 9), false);
+    assert.equal(podeUsar('lousa', [], 10), true);
+    assert.equal(resolverTema('lousa', [], 3), 'fliperama');
+    assert.equal(resolverTema('lousa', [], 12), 'lousa');
 });
