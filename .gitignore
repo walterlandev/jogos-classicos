@@ -67,3 +67,10 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Instalador de skills (npx skills) e arquivos temporários do Claude Code
+.agents/
+skills-lock.json
+.claude/settings.local.json
+.claude/worktrees/
+.superpowers/
