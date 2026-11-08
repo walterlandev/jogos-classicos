@@ -21,6 +21,9 @@ export function aplicarTema(id, { salvar = true, origem = 'usuario' } = {}) {
     atual = resolverTema(id, itensLiberados);
     raiz.dataset.tema = atual;
     publicarPaleta(TEMAS[atual].canvas);
+    // Barra do navegador no celular com a cor do topo do tema.
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(raiz).getPropertyValue('--topo-fundo').trim() || meta.content;
     if (salvar) {
         try { localStorage.setItem('tema', atual); } catch { /* navegação privada */ }
     }

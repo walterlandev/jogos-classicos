@@ -7,15 +7,21 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
 
 ## Onde as coisas moram
 
-- **Site estático, sem build:** HTML, CSS e JS puros em `public/`. Cada jogo
-  tem `public/<jogo>.html`, `public/css/<jogo>.css`, `public/js/<jogo>.js`
-  (tela, laço, controles; ES module) e `public/js/logica/<x>.js` (regras
-  puras). `public/css/style.css` é o estilo comum, `public/js/aviso.js` a
-  faixa de fim de jogo e `public/index.html` o menu.
+- **Site estático, sem build:** HTML, CSS e JS puros em `public/`. Jogos:
+  `blockix.html` (ex-"Tetris"), `snake.html`, `breakout.html`, cada um com
+  `js/<jogo>.js` (tela, laço, controles) e regras puras em `js/logica/`.
+  `index.html` + `js/menu.js` é o menu. Comuns: `js/aviso.js` (faixa de fim),
+  `js/controles.js` (botões de toque), `js/temas.js` (tema).
+- **Temas (o jogador escolhe):** `css/base.css` (estrutura, só variáveis) +
+  `css/temas/<id>.css`; registro e paleta do canvas em `js/logica/temas.js`.
+  Regras e tokens em `DESIGN.md`. Toda página de jogo usa a mesma moldura
+  (`.topo`, `.placar`, `.campo > .tela`, `.camada`, `.controles`).
 - **Login, perfil e ranking:** Firebase Auth + Firestore, projeto
   `jogos-classicos`, tudo em `public/js/auth.js` (SDK 10.7.1 pelo CDN
   `gstatic`). Coleção `usuarios/{uid}` com `nome`, `recorde_tetris`,
-  `recorde_snake`, `recorde_breakout` e `data_recorde`.
+  `recorde_snake`, `recorde_breakout`, `data_recorde`, `tema` (escolha do
+  jogador) e `itens_liberados` (reservado: só o servidor grava; Etapa 6).
+  O Blockix grava em `recorde_tetris` (campo antigo mantido).
 - **Hospedagem:** Firebase Hosting (`firebase.json` publica `public/`).
 - **Repositório:** GitHub `walterlandev/jogos-classicos` (público), remoto
   por HTTPS. O push NÃO publica o site; a publicação é um passo à parte.
@@ -52,5 +58,10 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
    Fim de jogo usa `mostrarFimDeJogo` (`aviso.js`); recorde usa
    `salvarRecordeDB(pontos, 'tetris'|'snake'|'breakout')`, que devolve true
    quando é recorde novo.
-6. **Mudou um jogo, teste os três:** `auth.js` e `style.css` são
-   compartilhados, e `auth.js` decide qual recorde mostrar pela URL.
+6. **Cor nunca fixa:** no CSS só variáveis do tema; no canvas só `paleta()`.
+   Tema novo precisa de todas as variáveis do `fliperama.css`. Ícones são
+   SVG próprios (nada de caractere unicode/emoji como ícone).
+7. **Renomear só a caixa no Windows:** `git mv` direto falha
+   (`Breakout`→`breakout`); passe por um nome temporário.
+8. **Mudou um jogo, teste os três:** `auth.js` e `style.css` são
+   compartilhados, e `auth.js` decide qual recorde mostrar por `<body data-jogo>`.

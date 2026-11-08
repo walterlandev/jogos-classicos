@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#d7262e">
     <title>Jogos Clássicos</title>
     <meta name="description" content="Blockix, Snake e Breakout no navegador, com recorde e ranking.">
     <script>try{var t=localStorage.getItem('tema');if(/^[a-z_]+$/.test(t))document.documentElement.dataset.tema=t}catch(e){}</script>
@@ -15,6 +16,7 @@
     <link rel="stylesheet" href="css/temas/lcd.css">
 </head>
 <body>
+    <a class="pular" href="#conteudo">Pular para os jogos</a>
     <header class="topo">
         <a class="marca" href="./">Jogos Clássicos</a>
         <nav class="conta" aria-label="Conta">
@@ -29,7 +31,7 @@
         </nav>
     </header>
 
-    <main class="menu">
+    <main class="menu" id="conteudo">
         <section aria-labelledby="tituloJogos">
             <h1 class="titulo-secao" id="tituloJogos">Escolha um jogo</h1>
             <ul class="maquinas">
@@ -118,7 +120,7 @@
         <h2 id="tituloLogin">Entrar</h2>
         <form id="loginForm" class="formulario" novalidate>
             <label class="campo-form"><span>E-mail</span>
-                <input type="email" id="loginEmail" autocomplete="email" required></label>
+                <input type="email" id="loginEmail" autocomplete="email" spellcheck="false" required></label>
             <label class="campo-form"><span>Senha</span>
                 <input type="password" id="loginSenha" autocomplete="current-password" required></label>
             <p class="mensagem" role="alert" aria-live="assertive"></p>
@@ -133,9 +135,9 @@
         <h2 id="tituloCadastro">Criar conta</h2>
         <form id="registerForm" class="formulario" novalidate>
             <label class="campo-form"><span>Apelido no ranking</span>
-                <input type="text" id="regNickname" autocomplete="nickname" maxlength="20" required></label>
+                <input type="text" id="regNickname" autocomplete="nickname" spellcheck="false" maxlength="20" required></label>
             <label class="campo-form"><span>E-mail</span>
-                <input type="email" id="regEmail" autocomplete="email" required></label>
+                <input type="email" id="regEmail" autocomplete="email" spellcheck="false" required></label>
             <label class="campo-form"><span>Senha (mínimo 6 caracteres)</span>
                 <input type="password" id="regSenha" autocomplete="new-password" minlength="6" required></label>
             <p class="mensagem" role="alert" aria-live="assertive"></p>

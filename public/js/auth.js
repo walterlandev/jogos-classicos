@@ -133,6 +133,7 @@ registerForm?.addEventListener('submit', async (e) => {
     if (!nome) return avisar(registerForm, 'Escolha um apelido para aparecer no ranking.', 'erro');
     const botao = registerForm.querySelector('[type="submit"]');
     botao.disabled = true;
+    botao.textContent = 'Criando conta…';
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, senha);
         await setDoc(doc(db, 'usuarios', cred.user.uid), {
@@ -146,6 +147,7 @@ registerForm?.addEventListener('submit', async (e) => {
         avisar(registerForm, mensagemDeErro(erro), 'erro');
     } finally {
         botao.disabled = false;
+        botao.textContent = 'Criar conta';
     }
 });
 
@@ -156,6 +158,7 @@ loginForm?.addEventListener('submit', async (e) => {
     const senha = el('loginSenha').value;
     const botao = loginForm.querySelector('[type="submit"]');
     botao.disabled = true;
+    botao.textContent = 'Entrando…';
     try {
         const cred = await signInWithEmailAndPassword(auth, email, senha);
         if (!cred.user.emailVerified) {
@@ -169,6 +172,7 @@ loginForm?.addEventListener('submit', async (e) => {
         avisar(loginForm, mensagemDeErro(erro), 'erro');
     } finally {
         botao.disabled = false;
+        botao.textContent = 'Entrar';
     }
 });
 
