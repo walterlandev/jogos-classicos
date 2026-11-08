@@ -1,0 +1,90 @@
+/* Tema: Portátil de LCD.
+   Minigame de bolso: corpo grafite, tela de cristal líquido esverdeada,
+   botões redondos laranja. Dentro dos jogos tudo é monocromático. */
+[data-tema="lcd"] {
+    --esquema: dark;
+    --fonte-titulo: 'Pixelify Sans', sans-serif;
+    --fonte-texto: 'IBM Plex Sans Condensed', sans-serif;
+    --fonte-numero: 'Pixelify Sans', sans-serif;
+    --peso-titulo: 700;
+
+    --fundo: #2f3a4a;
+    --texto: #e3e6dc;
+    --texto-suave: #b9bfb0;
+    --acento: #e8742c;
+    --acento-hover: #f2843d;
+    --acento-texto: #1c232d;
+    --foco: #f0a36f;
+    --erro: #7a1a0c;
+    --sucesso: #26301f;
+
+    --topo-fundo: #2f3a4a;
+    --topo-texto: #e3e6dc;
+    --topo-borda: 2px solid #3b4759;
+    --marca-cor: #e3e6dc;
+
+    --botao-fundo: #3b4759;
+    --botao-fundo-hover: #46536a;
+    --botao-texto: #e3e6dc;
+    --botao-borda: 0;
+    --raio-botao: 999px;
+    --primario-sombra: 0 3px 0 #a4481a;
+    --primario-sombra-ativa: 0 1px 0 #a4481a;
+
+    --maquina-fundo: #3b4759;
+    --maquina-texto: #e3e6dc;
+    --maquina-borda: 0;
+    --maquina-raio: 16px 16px 16px 44px;
+    --nome-fundo: transparent;
+    --nome-texto: #e3e6dc;
+    --tela-borda: 8px solid #1c232d;
+    --tela-raio: 8px;
+
+    --painel-fundo: #a8b59a;
+    --painel-texto: #26301f;
+    --painel-rotulo: #3a4630;
+    --painel-borda: 0;
+    --painel-raio: 8px;
+    --painel-foco: #26301f;
+    --linha: 1px dashed #5d6b52;
+    --opcao-fundo: #b6c2a9;
+    --opcao-borda: 2px solid #6b7a5e;
+    --opcao-marcada: #26301f;
+    --entrada-fundo: #c3cdb6;
+    --entrada-texto: #26301f;
+    --entrada-borda: 2px solid #26301f;
+    --raio-entrada: 4px;
+
+    --placar-fundo: #a8b59a;
+    --placar-texto: #26301f;
+    --placar-rotulo: #3a4630;
+    --placar-borda: 0;
+    --placar-raio: 4px;
+
+    --moldura: 10px;
+    --moldura-cor: #1c232d;
+    --moldura-raio: 10px;
+    --camada-fundo: rgba(168, 181, 154, 0.92);
+    --camada-texto: #26301f;
+    --camada-texto-suave: #3a4630;
+    --fim-fundo: transparent;
+    --fim-texto: #26301f;
+    --fim-borda: 2px dashed #26301f;
+    --fim-destaque: #26301f;
+
+    --controle-fundo: #e8742c;
+    --controle-texto: #1c232d;
+    --controle-borda: 0;
+    --controle-raio: 50%;
+    --controle-sombra: 0 4px 0 #a4481a;
+    --controle-sombra-ativa: 0 1px 0 #a4481a;
+}
+
+/* Cristal líquido: os segmentos "apagados" aparecem de leve. */
+[data-tema="lcd"] .miniatura { gap: 2px; }
+[data-tema="lcd"] .maquina-nome { padding: 12px 4px 6px; font-size: 19px; }
+[data-tema="lcd"] .maquina .botao-primario { width: auto; align-self: flex-end; min-width: 120px; }
+[data-tema="lcd"] .painel .titulo-secao { font-size: 19px; }
+/* A cruz de direção é preta e quadrada; só A/B e ações são laranja e redondos. */
+[data-tema="lcd"] .cruz .controle { --controle-fundo: #1c232d; --controle-texto: #a8b59a; --controle-raio: 6px; --controle-sombra: 0 3px 0 #11161c; }
+[data-tema="lcd"] .pagina-jogo .jogo { background: #2f3a4a; }

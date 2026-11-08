@@ -1,0 +1,91 @@
+/* Tema: Fliperama do bairro (padrão).
+   Gabinete de madeira, letreiro vermelho pintado, ficha amarela, noite azul. */
+[data-tema="fliperama"] {
+    --esquema: dark;
+    --fonte-titulo: 'Bungee', sans-serif;
+    --fonte-texto: 'Barlow Semi Condensed', sans-serif;
+    --fonte-botao: 'Bungee', sans-serif;
+    --peso-titulo: 400;
+
+    --fundo: #1b2a6b;
+    --texto: #e9edf2;
+    --texto-suave: #c3cbea;
+    --acento: #f6c026;
+    --acento-hover: #ffcf3f;
+    --acento-texto: #1b2a6b;
+    --foco: #f6c026;
+    --erro: #b51f26;
+    --sucesso: #1e6b3a;
+
+    --topo-fundo: #d7262e;
+    --topo-texto: #fff6dc;
+    --topo-borda: 6px solid #f6c026;
+    --marca-cor: #f6c026;
+    --marca-sombra: 3px 3px 0 #7d1015;
+
+    --botao-fundo: transparent;
+    --botao-texto: #e9edf2;
+    --botao-borda: 2px solid currentColor;
+    --raio-botao: 999px;
+    --primario-borda: 0;
+    --primario-sombra: 0 4px 0 #b48a0c;
+    --primario-sombra-ativa: 0 1px 0 #b48a0c;
+
+    --maquina-fundo: #8a5a33;
+    --maquina-texto: #fff4e6;
+    --maquina-borda: 0;
+    --maquina-raio: 20px 20px 6px 6px;
+    --maquina-sombra: inset 0 -8px 0 #6b4425;
+    --nome-fundo: #f6c026;
+    --nome-texto: #b51f26;
+    --nome-raio: 12px 12px 3px 3px;
+    --nome-alinha: center;
+    --tela-borda: 4px solid #2a2320;
+    --tela-raio: 6px;
+
+    --painel-fundo: #e9edf2;
+    --painel-texto: #1b2a6b;
+    --painel-rotulo: #44507e;
+    --painel-borda: 0;
+    --painel-raio: 10px;
+    --painel-foco: #d7262e;
+    --linha: 1px solid #c9d0db;
+    --opcao-fundo: #fff;
+    --opcao-borda: 2px solid #c9d0db;
+    --opcao-marcada: #d7262e;
+    --entrada-fundo: #fff;
+    --entrada-texto: #1b2a6b;
+    --entrada-borda: 2px solid #8f99b0;
+
+    --placar-fundo: #24378a;
+    --placar-texto: #f6c026;
+    --placar-rotulo: #c9d2f2;
+    --placar-borda: 0;
+    --placar-raio: 8px;
+
+    --moldura: 8px;
+    --moldura-cor: #8a5a33;
+    --moldura-raio: 12px;
+    --camada-fundo: rgba(12, 20, 53, 0.86);
+    --camada-texto: #e9edf2;
+    --camada-texto-suave: #c9d2f2;
+    --fim-fundo: #d7262e;
+    --fim-texto: #fff;
+    --fim-borda: 0;
+    --fim-destaque: #f6c026;
+
+    --controle-fundo: #24378a;
+    --controle-texto: #f6c026;
+    --controle-borda: 0;
+    --controle-raio: 18px;
+    --controle-sombra: 0 4px 0 #101c4d;
+    --controle-sombra-ativa: 0 1px 0 #101c4d;
+}
+
+/* A ficha: botão principal em Bungee, letreiro nos títulos de seção. */
+[data-tema="fliperama"] .titulo-secao { color: var(--titulo-cor, #f6c026); }
+[data-tema="fliperama"] .painel .titulo-secao { color: #d7262e; }
+[data-tema="fliperama"] .botao:not(.botao-primario):hover { background: rgba(255, 255, 255, 0.12); }
+[data-tema="fliperama"] .painel .botao:not(.botao-primario):hover,
+[data-tema="fliperama"] dialog .botao:not(.botao-primario):hover { background: rgba(27, 42, 107, 0.08); }
+[data-tema="fliperama"] .placar-item dt { font-weight: 700; }

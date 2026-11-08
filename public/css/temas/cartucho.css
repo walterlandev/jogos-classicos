@@ -1,0 +1,107 @@
+/* Tema: Manual do cartucho.
+   Caixa e manual de cartucho dos anos 90: cor chapada, contorno de 3px em
+   tinta e sombra dura (este mundo é impresso; a sombra sem desfoque é dele). */
+[data-tema="cartucho"] {
+    --esquema: light;
+    --fonte-titulo: 'Rubik Mono One', sans-serif;
+    --fonte-texto: 'Rubik', sans-serif;
+    --fonte-numero: 'Rubik Mono One', sans-serif;
+    --peso-titulo: 400;
+
+    --tinta: #1a1c22;
+    --fundo: #e4e7ec;
+    --texto: #1a1c22;
+    --texto-suave: #474c59;
+    --acento: #f2b807;
+    --acento-hover: #ffc824;
+    --acento-texto: #1a1c22;
+    --foco: #2342d8;
+    --erro: #b3290f;
+    --sucesso: #1f7a45;
+
+    --topo-fundo: #fff;
+    --topo-texto: #1a1c22;
+    --topo-borda: 3px solid #1a1c22;
+    --marca-cor: #1a1c22;
+
+    --botao-fundo: #fff;
+    --botao-fundo-hover: #f2f3f6;
+    --botao-texto: #1a1c22;
+    --botao-borda: 3px solid #1a1c22;
+    --raio-botao: 0;
+    --botao-sombra: 4px 4px 0 #1a1c22;
+    --botao-sombra-ativa: 1px 1px 0 #1a1c22;
+    --botao-afunda: 3px;
+    --primario-sombra: 4px 4px 0 #1a1c22;
+    --primario-sombra-ativa: 1px 1px 0 #1a1c22;
+
+    --maquina-fundo: #fff;
+    --maquina-texto: #1a1c22;
+    --maquina-borda: 3px solid #1a1c22;
+    --maquina-raio: 0;
+    --maquina-sombra: 6px 6px 0 #1a1c22;
+    --maquina-espaco: 0;
+    --nome-texto: #fff;
+    --tela-raio: 0;
+
+    --painel-fundo: #fff;
+    --painel-texto: #1a1c22;
+    --painel-rotulo: #474c59;
+    --painel-borda: 3px solid #1a1c22;
+    --painel-raio: 0;
+    --painel-sombra: 6px 6px 0 #1a1c22;
+    --linha: 2px solid #e4e7ec;
+    --opcao-fundo: #fff;
+    --opcao-borda: 3px solid #1a1c22;
+    --opcao-raio: 0;
+    --opcao-marcada: #2342d8;
+    --entrada-fundo: #fff;
+    --entrada-texto: #1a1c22;
+    --entrada-borda: 3px solid #1a1c22;
+    --raio-entrada: 0;
+
+    --placar-fundo: #fff;
+    --placar-texto: #1a1c22;
+    --placar-rotulo: #474c59;
+    --placar-borda: 3px solid #1a1c22;
+    --placar-raio: 0;
+
+    --moldura: 3px;
+    --moldura-cor: #1a1c22;
+    --moldura-raio: 0;
+    --moldura-sombra: 6px 6px 0 #2342d8;
+    --camada-fundo: rgba(228, 231, 236, 0.93);
+    --camada-texto: #1a1c22;
+    --camada-texto-suave: #474c59;
+    --fim-fundo: #c8361a;
+    --fim-texto: #fff;
+    --fim-borda: 3px solid #1a1c22;
+    --fim-destaque: #fff;
+
+    --controle-fundo: #fff;
+    --controle-texto: #1a1c22;
+    --controle-borda: 3px solid #1a1c22;
+    --controle-raio: 0;
+    --controle-sombra: 4px 4px 0 #1a1c22;
+    --controle-sombra-ativa: 1px 1px 0 #1a1c22;
+}
+
+/* O rótulo do cartucho: faixa diagonal em duas cores, uma por jogo. */
+[data-tema="cartucho"] .maquina-nome {
+    background: linear-gradient(115deg, var(--rotulo-1) 0 64%, #1a1c22 64% 67%, var(--rotulo-2) 67%);
+    border-bottom: 3px solid #1a1c22;
+    padding: 10px 14px;
+    font-size: 17px;
+}
+[data-tema="cartucho"] .maquina[data-jogo="blockix"] { --rotulo-1: #2342d8; --rotulo-2: #f2b807; }
+[data-tema="cartucho"] .maquina[data-jogo="snake"] { --rotulo-1: #1f7a45; --rotulo-2: #f04e30; }
+[data-tema="cartucho"] .maquina[data-jogo="breakout"] { --rotulo-1: #c8361a; --rotulo-2: #2342d8; }
+[data-tema="cartucho"] .miniatura { margin: 0; border-bottom: 3px solid #1a1c22; }
+[data-tema="cartucho"] .maquina-recorde { margin: 12px 14px; }
+[data-tema="cartucho"] .maquina .botao-primario { width: auto; margin: auto 14px 16px; }
+[data-tema="cartucho"] .painel .titulo-secao {
+    margin: -20px -20px 14px; padding: 10px 20px;
+    background: #2342d8; color: #fff; border-bottom: 3px solid #1a1c22;
+    font-size: 16px;
+}
+[data-tema="cartucho"] .placar-item dd { font-size: 20px; }

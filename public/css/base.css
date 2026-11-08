@@ -1,0 +1,330 @@
+/* ==========================================================================
+   Base comum: estrutura e componentes. Nenhuma cor ou fonte fixa aqui —
+   tudo vem das variáveis de public/css/temas/<tema>.css. Ver DESIGN.md.
+========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+    color-scheme: var(--esquema, dark);
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--acento) var(--fundo);
+}
+
+body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--texto);
+    font-family: var(--fonte-texto);
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+img, svg, canvas { display: block; }
+button, input { font: inherit; color: inherit; }
+a { color: inherit; text-underline-offset: 0.22em; }
+::selection { background: var(--acento); color: var(--acento-texto); }
+:focus-visible { outline: 3px solid var(--foco); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+.visualmente-oculto {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+}
+
+/* --- Ícones (SVG próprios, traço 2.5) --- */
+.icone {
+    width: 24px; height: 24px; flex: none;
+    fill: none; stroke: currentColor; stroke-width: 2.5;
+    stroke-linecap: round; stroke-linejoin: round;
+}
+.icone .cheio { fill: currentColor; stroke: none; }
+
+/* --- Topo --- */
+.topo {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 20px;
+    background: var(--topo-fundo); color: var(--topo-texto);
+    border-bottom: var(--topo-borda);
+}
+.marca {
+    margin: 0;
+    font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400);
+    font-size: clamp(20px, 4vw, 28px); line-height: 1.15;
+    color: var(--marca-cor); text-shadow: var(--marca-sombra, none);
+    text-decoration: none;
+}
+.conta { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
+.conta [hidden] { display: none; }
+.ola { font-weight: 600; }
+
+/* --- Botões --- */
+.botao {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 8px 18px;
+    border: var(--botao-borda); border-radius: var(--raio-botao);
+    background: var(--botao-fundo); color: var(--botao-texto);
+    font-family: var(--fonte-botao, var(--fonte-texto)); font-weight: 700; font-size: 16px;
+    line-height: 1.2; text-decoration: none; cursor: pointer;
+    box-shadow: var(--botao-sombra, none);
+    transition: transform 80ms ease-out, box-shadow 80ms ease-out, background-color 120ms ease-out;
+}
+.botao:hover { background: var(--botao-fundo-hover, var(--botao-fundo)); }
+.botao:active { transform: translateY(var(--botao-afunda, 2px)); box-shadow: var(--botao-sombra-ativa, none); }
+.botao:disabled { opacity: 0.55; cursor: not-allowed; }
+.botao-primario {
+    background: var(--acento); color: var(--acento-texto);
+    border: var(--primario-borda, var(--botao-borda));
+    box-shadow: var(--primario-sombra, var(--botao-sombra, none));
+}
+.botao-primario:hover { background: var(--acento-hover, var(--acento)); }
+.botao-primario:active { box-shadow: var(--primario-sombra-ativa, none); }
+.botao-icone { width: 44px; padding: 0; }
+.topo .botao { --botao-texto: var(--topo-texto); }
+
+/* --- Menu --- */
+.menu {
+    max-width: 1120px; margin: 0 auto;
+    padding: 32px 20px 40px;
+    display: grid; gap: 40px;
+}
+.titulo-secao {
+    margin: 0 0 16px;
+    font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400);
+    font-size: clamp(20px, 3vw, 26px); line-height: 1.2;
+    color: var(--titulo-cor, var(--texto));
+}
+.maquinas {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;
+}
+.maquina {
+    display: flex; flex-direction: column; height: 100%;
+    background: var(--maquina-fundo); color: var(--maquina-texto);
+    border: var(--maquina-borda); border-radius: var(--maquina-raio);
+    box-shadow: var(--maquina-sombra, none);
+    padding: var(--maquina-espaco, 12px);
+}
+.maquina-nome {
+    margin: 0; padding: 8px 12px;
+    font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400);
+    font-size: 20px; line-height: 1.2;
+    background: var(--nome-fundo); color: var(--nome-texto);
+    border-radius: var(--nome-raio, 0); text-align: var(--nome-alinha, left);
+}
+.miniatura {
+    margin: 12px 0; padding: 12px;
+    display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px;
+    background: var(--c-fundo);
+    border: var(--tela-borda, 0); border-radius: var(--tela-raio, 4px);
+}
+.miniatura i { aspect-ratio: 1; background: var(--c-vazio); }
+.miniatura .p1 { background: var(--c-peca-1); }
+.miniatura .p2 { background: var(--c-peca-2); }
+.miniatura .p3 { background: var(--c-peca-3); }
+.miniatura .p4 { background: var(--c-peca-4); }
+.miniatura .p5 { background: var(--c-peca-5); }
+.miniatura .p6 { background: var(--c-peca-6); }
+.miniatura .p7 { background: var(--c-peca-7); }
+.miniatura .t1 { background: var(--c-tijolo-1); }
+.miniatura .t2 { background: var(--c-tijolo-2); }
+.miniatura .t3 { background: var(--c-tijolo-3); }
+.miniatura .cb { background: var(--c-cobra); }
+.miniatura .cc { background: var(--c-cabeca); }
+.miniatura .cm { background: var(--c-comida); }
+.miniatura .bl { background: var(--c-bola); }
+.miniatura .rq { background: var(--c-raquete); }
+.maquina-recorde {
+    display: flex; justify-content: space-between; gap: 12px;
+    margin: 0 4px 12px; font-size: 16px;
+}
+.maquina-recorde strong { font-variant-numeric: tabular-nums; }
+.maquina .botao-primario { margin-top: auto; width: 100%; }
+
+.menu-colunas {
+    display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 28px; align-items: start;
+}
+@media (max-width: 820px) { .menu-colunas { grid-template-columns: 1fr; } }
+
+.painel {
+    --botao-texto: var(--painel-texto);
+    --foco: var(--painel-foco, var(--foco));
+    --titulo-cor: var(--painel-texto);
+    padding: 20px;
+    background: var(--painel-fundo); color: var(--painel-texto);
+    border: var(--painel-borda); border-radius: var(--painel-raio);
+    box-shadow: var(--painel-sombra, none);
+}
+.painel .titulo-secao { font-size: 20px; margin-bottom: 12px; }
+
+.abas { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.aba { min-height: 40px; padding: 6px 14px; font-size: 15px; }
+.aba[aria-selected="true"] { background: var(--acento); color: var(--acento-texto); }
+
+.tabela-ranking { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.tabela-ranking th { text-align: left; font-size: 14px; color: var(--painel-rotulo, inherit); font-weight: 600; padding: 6px; }
+.tabela-ranking td { padding: 8px 6px; border-top: var(--linha); }
+.tabela-ranking th:last-child, .tabela-ranking td:last-child { text-align: right; }
+.tabela-ranking td:first-child { width: 3.5em; }
+.tabela-ranking tr.voce td { font-weight: 700; }
+
+.seletor-tema { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
+.opcao-tema {
+    position: relative;
+    display: grid; grid-template-columns: auto 1fr; column-gap: 14px; align-items: center;
+    padding: 12px 14px; cursor: pointer;
+    background: var(--opcao-fundo); border: var(--opcao-borda); border-radius: var(--opcao-raio, var(--painel-raio));
+}
+.opcao-tema input { position: absolute; opacity: 0; pointer-events: none; }
+.opcao-tema:has(input:checked) { border-color: var(--opcao-marcada, var(--painel-texto)); box-shadow: inset 0 0 0 2px var(--opcao-marcada, var(--painel-texto)); }
+.opcao-tema:has(input:focus-visible) { outline: 3px solid var(--foco); outline-offset: 2px; }
+.amostras { grid-row: span 2; display: flex; }
+.amostras span { width: 20px; height: 34px; }
+.amostras span:first-child { border-radius: 4px 0 0 4px; }
+.amostras span:last-child { border-radius: 0 4px 4px 0; }
+.opcao-nome { font-weight: 700; }
+.opcao-descricao { font-size: 15px; color: var(--painel-rotulo, inherit); }
+
+.rodape { padding: 24px 20px 32px; text-align: center; font-size: 15px; color: var(--texto-suave); }
+.rodape p { margin: 0; }
+
+/* --- Diálogos e formulários --- */
+dialog {
+    --botao-texto: var(--painel-texto);
+    --foco: var(--painel-foco, var(--foco));
+    width: min(420px, calc(100vw - 32px));
+    padding: 24px;
+    background: var(--painel-fundo); color: var(--painel-texto);
+    border: var(--painel-borda); border-radius: var(--painel-raio);
+    box-shadow: var(--dialogo-sombra, var(--painel-sombra, 0 24px 60px rgba(0, 0, 0, 0.45)));
+}
+dialog::backdrop { background: rgba(8, 10, 18, 0.62); }
+dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400); font-size: 22px; }
+.formulario { display: grid; gap: 14px; }
+.campo-form { display: grid; gap: 6px; }
+.campo-form span { font-weight: 600; font-size: 15px; }
+.campo-form input {
+    min-height: 44px; padding: 8px 12px;
+    background: var(--entrada-fundo); color: var(--entrada-texto);
+    border: var(--entrada-borda); border-radius: var(--raio-entrada, 6px);
+}
+.mensagem { margin: 0; min-height: 1.5em; font-weight: 600; }
+.mensagem[data-tipo="erro"] { color: var(--erro); }
+.mensagem[data-tipo="sucesso"] { color: var(--sucesso); }
+.acoes-form { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+
+/* --- Página de jogo --- */
+.pagina-jogo { height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); overflow: hidden; }
+.pagina-jogo .topo { padding: 8px 12px; }
+.pagina-jogo .marca { font-size: clamp(20px, 5vw, 26px); }
+
+.jogo {
+    min-height: 0;
+    display: grid; gap: 12px;
+    grid-template-areas: "placar" "campo" "controles";
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    padding: 12px 16px 16px;
+}
+
+.placar { grid-area: placar; display: grid; gap: 8px; }
+.placar-lista {
+    margin: 0;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)); gap: 8px;
+}
+.placar-item {
+    display: grid; align-content: center;
+    padding: 6px 10px;
+    background: var(--placar-fundo); color: var(--placar-texto);
+    border: var(--placar-borda); border-radius: var(--placar-raio);
+}
+.placar-item dt { font-size: 14px; line-height: 1.2; color: var(--placar-rotulo); }
+.placar-item dd {
+    margin: 0;
+    font-family: var(--fonte-numero, var(--fonte-titulo)); font-size: 22px; line-height: 1.25;
+    font-variant-numeric: tabular-nums;
+}
+.placar-item canvas { width: 44px; height: 44px; image-rendering: pixelated; }
+.so-pc { display: none; }
+
+.campo { grid-area: campo; min-height: 0; container-type: size; display: grid; place-items: center; }
+.tela {
+    position: relative;
+    width: min(100cqw,
+               calc((100cqh - 2 * var(--moldura)) * var(--proporcao) + 2 * var(--moldura)),
+               var(--largura-max, 100cqw));
+    background: var(--c-fundo);
+    border: var(--moldura) solid var(--moldura-cor);
+    border-radius: var(--moldura-raio);
+    box-shadow: var(--moldura-sombra, none);
+    overflow: hidden;
+}
+.tela canvas { width: 100%; height: auto; image-rendering: pixelated; touch-action: none; }
+
+.camada {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    padding: 16px; text-align: center;
+    background: var(--camada-fundo); color: var(--camada-texto);
+}
+.camada[hidden] { display: none; }
+.camada-titulo { margin: 0; font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400); font-size: 26px; line-height: 1.2; }
+.dica { margin: 0; max-width: 30ch; font-size: 15px; color: var(--camada-texto-suave); }
+
+.fim-de-jogo {
+    display: grid; gap: 2px;
+    padding: 12px 18px;
+    background: var(--fim-fundo); color: var(--fim-texto);
+    border: var(--fim-borda); border-radius: var(--placar-raio);
+}
+.fim-de-jogo[hidden] { display: none; }
+.fim-de-jogo p { margin: 0; }
+.fim-de-jogo .fim-titulo { font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400); font-size: 22px; }
+.fim-de-jogo .fim-recorde { color: var(--fim-destaque); font-weight: 700; }
+
+.controles {
+    grid-area: controles;
+    display: flex; align-items: center; justify-content: center; gap: 14px;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.controle {
+    width: 64px; height: 64px; padding: 0;
+    display: grid; place-items: center;
+    background: var(--controle-fundo); color: var(--controle-texto);
+    border: var(--controle-borda); border-radius: var(--controle-raio);
+    box-shadow: var(--controle-sombra, none);
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: transform 60ms ease-out, box-shadow 60ms ease-out;
+}
+.controle.apertado, .controle:active { transform: translateY(3px); box-shadow: var(--controle-sombra-ativa, none); }
+.controle .icone { width: 30px; height: 30px; }
+.controle-pequeno { width: 48px; height: 48px; }
+.controle-pequeno .icone { width: 24px; height: 24px; }
+.controle-largo { width: 112px; }
+.cruz { display: grid; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 4px; }
+.cruz .controle { width: 60px; height: 60px; }
+.cruz .cima { grid-area: 1 / 2; }
+.cruz .esquerda { grid-area: 2 / 1; }
+.cruz .direita { grid-area: 2 / 3; }
+.cruz .baixo { grid-area: 3 / 2; }
+
+/* PC com mouse: campo no centro, placar ao lado, sem botões de toque. */
+@media (min-width: 900px) and (pointer: fine) {
+    .jogo {
+        width: 100%; max-width: 1100px; margin: 0 auto;
+        grid-template-areas: "campo placar";
+        grid-template-columns: minmax(0, 1fr) 230px;
+        grid-template-rows: minmax(0, 1fr);
+        gap: 24px; padding: 20px 24px 24px;
+    }
+    .placar { align-content: start; }
+    .placar-lista { grid-template-columns: 1fr; }
+    .placar-item { padding: 10px 14px; }
+    .placar-item dd { font-size: 28px; }
+    .placar-item canvas { width: 72px; height: 72px; }
+    .so-pc { display: inline-flex; }
+    .controles { display: none; }
+}
