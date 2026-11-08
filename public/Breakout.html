@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Breakout Neon</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/Breakout.css">
+</head>
+<body>
+
+    <header class="topbar">
+        <h1 class="logo">Breakout Neon</h1>
+        
+        <nav class="nav-area">
+            <div id="statusLogado" style="display: none; align-items: center; margin-right: 15px;">
+                <span style="font-size: 10px; color: #fff;">JOGADOR: <span id="userName" class="neon-text-green">...</span></span>
+            </div>
+
+            <a href="index.html" class="btn-neon">⬅ Voltar</a>
+        </nav>
+    </header>
+
+    <main class="game-container">
+        
+        <div class="game-wrapper">
+            
+            <div class="monitor-frame neon-box">
+                <canvas id="gameCanvas" width="480" height="320"></canvas>
+                
+                <button id="startBtnOverlay" onclick="startGame()" class="btn-start-overlay">▶ JOGAR</button>
+                <div id="pauseOverlay" class="pause-msg" style="display:none;">PAUSADO</div>
+            </div>
+
+            <aside class="hud-sidebar desktop-only">
+                <div class="hud-item">
+                    <p>SCORE</p>
+                    <span id="scorePC" class="neon-text-cyan">00000</span>
+                </div>
+                <div class="hud-item">
+                    <p>FASE</p>
+                    <span id="levelPC" class="neon-text-green">1</span>
+                </div>
+                <div class="hud-item">
+                    <p>RECORD</p>
+                    <span id="userScore" class="neon-text-magenta">---</span>
+                </div>
+                <button onclick="togglePause()" class="btn-neon">PAUSAR</button>
+            </aside>
+
+        </div>
+
+        <div class="mobile-controls">
+            <div class="d-pad-full">
+                <button class="btn-dir-wide left" 
+                    ontouchstart="handleInput('left', true); event.preventDefault()" 
+                    ontouchend="handleInput('left', false)">
+                    ◀ ESQUERDA
+                </button>
+                
+                <button class="btn-dir-wide right" 
+                    ontouchstart="handleInput('right', true); event.preventDefault()" 
+                    ontouchend="handleInput('right', false)">
+                    DIREITA ▶
+                </button>
+            </div>
+            
+            <button class="btn-pause-mob" ontouchstart="togglePause(); event.preventDefault()">II</button>
+        </div>
+
+        <footer class="hud-footer mobile-only">
+            <div class="hud-item-mini">
+                <p>PONTOS</p>
+                <span id="scoreMob" class="neon-text-cyan">0</span>
+            </div>
+            <div class="hud-item-mini">
+                <p>FASE</p>
+                <span id="levelMob" class="neon-text-green">1</span>
+            </div>
+        </footer>
+
+    </main>
+
+    <script type="module" src="js/auth.js"></script>
+    
+    <script src="js/Breakout.js"></script>
+    
+</body>
+<footer class="footer">
+    <p>© 2026 - jogos classicos WAS.</p>
+</footer>
+</html>

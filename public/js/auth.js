@@ -43,53 +43,77 @@ onAuthStateChanged(auth, async (user) => {
     const userScoreEl = document.getElementById('userScore');
 
     if (user) {
+        // Se o usuário está logado, busca os dados dele
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
         if (userDoc.exists()) {
             const dados = userDoc.data();
             if (userNameEl) userNameEl.innerText = dados.nome || "Jogador";
             
+            // Lógica para mostrar o recorde certo dependendo da página
             if (userScoreEl) {
-                const eSnake = window.location.href.includes("snake");
-                userScoreEl.innerText = eSnake ? (dados.recorde_snake || 0) : (dados.recorde_tetris || 0);
+                const url = window.location.href.toLowerCase();
+                if (url.includes("snake")) {
+                    userScoreEl.innerText = dados.recorde_snake || 0;
+                } else if (url.includes("breakout")) {
+                    userScoreEl.innerText = dados.recorde_breakout || 0;
+                } else {
+                    // Assume Tetris como padrão ou index
+                    userScoreEl.innerText = dados.recorde_tetris || 0;
+                }
             }
             
             if (statusLogado) statusLogado.style.display = 'flex';
             if (botoesDeslogado) botoesDeslogado.style.display = 'none';
         }
     } else {
+        // Se não está logado
         if (statusLogado) statusLogado.style.display = 'none';
         if (botoesDeslogado) botoesDeslogado.style.display = 'flex';
     }
 });
 
 // --- SALVAR RECORDES (UNIFICADO) ---
+// Agora aceita 'snake', 'tetris' ou 'breakout' como parametro tipoJogo
 window.salvarRecordeDB = async (pontosFeitos, tipoJogo) => {
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) return; // Se não tiver logado, não salva
 
-    // Ajuste para garantir que grave no campo certo do seu banco (recorde_snake)
-    const campoRecorde = (tipoJogo === "usuarios_snake") ? "recorde_snake" : "recorde_tetris";
+    // Define qual campo do banco de dados vamos atualizar
+    let campoRecorde = "";
+    if (tipoJogo === "snake" || tipoJogo === "usuarios_snake") {
+        campoRecorde = "recorde_snake";
+    } else if (tipoJogo === "breakout" || tipoJogo === "usuarios_breakout") {
+        campoRecorde = "recorde_breakout";
+    } else {
+        campoRecorde = "recorde_tetris";
+    }
+
     const userRef = doc(db, "usuarios", user.uid);
 
     try {
         const snap = await getDoc(userRef);
         if (snap.exists()) {
-            const recordeAtual = snap.data()[campoRecorde] || 0;
+            const dados = snap.data();
+            // Pega o recorde atual ou 0 se o campo ainda não existir
+            const recordeAtual = dados[campoRecorde] || 0;
 
-            // Só atualiza se a pontuação for maior que a atual
+            // Só atualiza se a pontuação atual for maior que o recorde do banco
             if (pontosFeitos > recordeAtual) {
                 await updateDoc(userRef, { 
                     [campoRecorde]: pontosFeitos,
                     data_recorde: new Date()
                 });
-                alert("🎮 NOVO RECORDE: " + pontosFeitos + " pts!");
+                
+                alert(`🎮 NOVO RECORDE NO ${campoRecorde.toUpperCase()}: ${pontosFeitos} pts!`);
                 window.location.reload(); 
             }
         }
-    } catch (e) { console.error("Erro ao salvar recorde:", e); }
+    } catch (e) { 
+        console.error("Erro ao salvar recorde:", e); 
+    }
 };
 
-// --- INTERFACE ---
+// --- INTERFACE (Modais) ---
 window.openLogin = () => document.getElementById('loginModal')?.showModal();
 window.openRegister = () => document.getElementById('registerModal')?.showModal();
 window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
@@ -105,12 +129,18 @@ if (registerForm) {
 
         try {
             const userCred = await createUserWithEmailAndPassword(auth, email, senha);
+            
+            // AQUI É O PULO DO GATO:
+            // Já cria o usuário com os 3 campos de jogos zerados.
+            // Assim não dá erro de "undefined" depois.
             await setDoc(doc(db, "usuarios", userCred.user.uid), { 
                 nome: nick, 
                 email: email,
                 recorde_snake: 0, 
-                recorde_tetris: 0 
+                recorde_tetris: 0,
+                recorde_breakout: 0 
             });
+            
             await sendEmailVerification(userCred.user);
             alert("Conta criada! Verifique seu e-mail.");
             window.location.reload();
@@ -138,10 +168,10 @@ if (loginForm) {
     });
 }
 
-// --- RANKING (COM SUPORTE A ZEROS) ---
+// --- RANKING ---
 async function carregarRanking(campoOrdenacao, idTabela) {
     const rankingCorpo = document.getElementById(idTabela);
-    if (!rankingCorpo) return;
+    if (!rankingCorpo) return; // Se a tabela não existir na pagina, para aqui
 
     try {
         const q = query(collection(db, "usuarios"), orderBy(campoOrdenacao, "desc"), limit(10));
@@ -152,6 +182,7 @@ async function carregarRanking(campoOrdenacao, idTabela) {
 
         querySnapshot.forEach((docSnap) => {
             const dados = docSnap.data();
+            // Garante que mostre 0 se o campo não existir
             const pontos = dados[campoOrdenacao] || 0;
 
             rankingCorpo.innerHTML += `
@@ -165,10 +196,12 @@ async function carregarRanking(campoOrdenacao, idTabela) {
         });
     } catch (error) { 
         console.error("Erro ranking:", error);
-        rankingCorpo.innerHTML = "<tr><td colspan='3'>Aguardando jogadores...</td></tr>";
+        rankingCorpo.innerHTML = "<tr><td colspan='3'>Carregando...</td></tr>";
     }
 }
 
-// Chamada inicial para preencher as tabelas na index
+// --- INICIALIZAÇÃO DOS RANKINGS ---
+// Chamamos as funções para preencher as tabelas (caso existam na página)
 carregarRanking("recorde_tetris", "rankingTetris");
 carregarRanking("recorde_snake", "rankingSnake");
+carregarRanking("recorde_breakout", "rankingBreakout");

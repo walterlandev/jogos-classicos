@@ -1,164 +1,206 @@
-/* ===== CONFIGURAÇÃO DO CANVAS ===== */
-const canvas = document.getElementById('snakeGame'); 
-const ctx = canvas.getContext('2d');
-const scoreElement = document.getElementById('snakeScore');
-const bestElement = document.getElementById('snakeBest');
-const levelElement = document.getElementById('snakeLevel'); // Novo indicador
+/* ==========================================================================
+   CONFIGURAÇÃO INICIAL
+========================================================================== */
+const canvas = document.getElementById("snakeGame");
+const ctx = canvas.getContext("2d");
+const scoreEl = document.getElementById("snakeScore");
+const levelEl = document.getElementById("snakeLevel");
+const bestEl = document.getElementById("snakeBest");
 
-const SIZE = 20; 
-const TOTAL_BLOCOS = (canvas.width / SIZE) * (canvas.height / SIZE); 
-const BLOCOS_POR_NIVEL = TOTAL_BLOCOS / 10; 
+// Tenta encontrar qualquer um dos botões de início possíveis
+const btnStart = document.querySelector(".btn-start") || 
+                 document.querySelector(".btn-start-overlay") || 
+                 document.getElementById("startBtnPC");
 
-let snake = [{ x: 200, y: 200 }, { x: 180, y: 200 }, { x: 160, y: 200 }];
-let food = { x: 0, y: 0 };
-let dx = SIZE; 
-let dy = 0;    
-let score = 0;
-let level = 1;
-let gameInterval = null;
-let speed = 200; 
+const SIZE = 20;
+let snake, food, dx, dy, score, level, speed, loop;
+let isBonus = false;
+let bonusTimer = null;
 
-function getRandomFood() {
-    food.x = Math.floor(Math.random() * (canvas.width / SIZE)) * SIZE;
-    food.y = Math.floor(Math.random() * (canvas.height / SIZE)) * SIZE;
-    for (let part of snake) {
-        if (part.x === food.x && part.y === food.y) return getRandomFood();
+/* ==========================================================================
+   FUNÇÕES DE INÍCIO E GAME OVER
+========================================================================== */
+window.startGame = () => {
+    if (loop) return; // Evita iniciar dois loops ao mesmo tempo
+
+    // Esconde o botão que foi clicado
+    if (btnStart) btnStart.style.display = "none";
+
+    // Reinicia variáveis do jogo
+    snake = [
+        { x: SIZE * 5, y: SIZE * 5 },
+        { x: SIZE * 4, y: SIZE * 5 },
+        { x: SIZE * 3, y: SIZE * 5 }
+    ];
+    dx = SIZE; 
+    dy = 0;
+    score = 0; 
+    level = 1; 
+    speed = 200;
+    isBonus = false;
+
+    updateHUD();
+    spawnFood();
+    
+    // Inicia o ciclo do jogo
+    if (loop) clearInterval(loop);
+    loop = setInterval(draw, speed);
+};
+
+function gameOver() {
+    clearInterval(loop);
+    loop = null;
+    if (bonusTimer) clearTimeout(bonusTimer);
+    
+    if (btnStart) {
+        btnStart.innerText = "TENTAR NOVAMENTE";
+        btnStart.style.display = "block";
     }
+
+    ctx.fillStyle = "white";
+    ctx.font = "16px 'Press Start 2P'";
+    ctx.textAlign = "center";
+    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
 }
 
+/* ==========================================================================
+   LÓGICA DA COMIDA E DO BÔNUS (REGRAS NOVAS)
+========================================================================== */
+function spawnFood() {
+    // Se o score é 20, 40, 60... e ainda não ativamos o modo bônus
+    if (score > 0 && score % 20 === 0 && !isBonus) {
+        isBonus = true;
+        
+        // O bônus dura 10 segundos. Se não comer, ele volta a ser comida normal.
+        if (bonusTimer) clearTimeout(bonusTimer);
+        bonusTimer = setTimeout(() => {
+            if (isBonus) {
+                isBonus = false;
+                spawnFood(); // Troca a posição para virar comida normal
+            }
+        }, 10000);
+    }
+
+    food = {
+        x: Math.floor(Math.random() * (canvas.width / SIZE)) * SIZE,
+        y: Math.floor(Math.random() * (canvas.height / SIZE)) * SIZE
+    };
+
+    // Impede que a comida nasça em cima da cobra
+    if (snake.some(p => p.x === food.x && p.y === food.y)) spawnFood();
+}
+
+/* ==========================================================================
+   DESENHO E ATUALIZAÇÃO
+========================================================================== */
 function draw() {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "#ff00ff";
-    ctx.fillStyle = "#ff00ff";
+    // Desenha Peça (Bônus Arco-íris ou Comida Rosa)
+    if (isBonus) {
+        const hue = (Date.now() / 2) % 360;
+        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+        ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+        ctx.shadowBlur = 20;
+    } else {
+        ctx.fillStyle = "#ff00ff";
+        ctx.shadowColor = "#ff00ff";
+        ctx.shadowBlur = 10;
+    }
     ctx.fillRect(food.x, food.y, SIZE - 1, SIZE - 1);
 
+    // Desenha Cobra
     ctx.shadowColor = "#00ffff";
-    snake.forEach((part, index) => {
-        const isHead = index === 0;
-        ctx.shadowBlur = isHead ? 20 : 10;
-        ctx.fillStyle = isHead ? "#fff" : "#00ffff"; 
-        ctx.fillRect(part.x, part.y, SIZE - 1, SIZE - 1);
+    snake.forEach((p, i) => {
+        ctx.shadowBlur = i === 0 ? 20 : 10;
+        ctx.fillStyle = i === 0 ? "#fff" : "#00ffff";
+        ctx.fillRect(p.x, p.y, SIZE - 1, SIZE - 1);
     });
-    
+
     ctx.shadowBlur = 0;
-    updateSnake();
+    update();
 }
 
-function updateSnake() {
+function update() {
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
 
-    if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) return gameOver();
-    for (let i = 0; i < snake.length; i++) {
-        if (head.x === snake[i].x && head.y === snake[i].y) return gameOver();
+    // Colisões
+    if (head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height ||
+        snake.some(p => p.x === head.x && p.y === head.y)) {
+        return gameOver();
     }
 
     snake.unshift(head);
 
+    // Quando a cobra come a peça
     if (head.x === food.x && head.y === food.y) {
-        score++;
-        updateStats();
-        getRandomFood();
+        if (isBonus) {
+            score += 10; // Bônus dá 10 pontos
+            // EFEITO: Diminui a cobra em 5 pedaços (mantendo no mínimo 2)
+            for (let i = 0; i < 5; i++) {
+                if (snake.length > 2) snake.pop();
+            }
+            isBonus = false;
+            if (bonusTimer) clearTimeout(bonusTimer);
+        } else {
+            score += 1; // Comida normal dá 1 ponto
+        }
+
+        checkLevel();
+        spawnFood();
+        updateHUD();
     } else {
         snake.pop();
     }
 }
 
-/* ===== LÓGICA DE NÍVEL E VELOCIDADE ===== */
-function updateStats() {
-    scoreElement.innerText = score.toString().padStart(5, '0');
-    
-    // Nível baseado na capacidade máxima / 10
-    // Em um canvas 400x400 com blocos de 20px, BLOCOS_POR_NIVEL será 40.
-    let newLevel = Math.floor(score / BLOCOS_POR_NIVEL) + 1;
-    
-    // Se subir de nível (máximo nível 10 conforme sua regra)
-    if (newLevel > level && newLevel <= 10) {
-        level = newLevel;
-        levelElement.innerText = level; 
-        
-        clearInterval(gameInterval);
-        
-        // Velocidade: Aumenta 15% por nível (o intervalo diminui para 85%)
-        // Começa em 200ms. Nível 2 = 200 * 0.85, Nível 3 = 200 * 0.85 * 0.85...
-        speed = 200 * Math.pow(0.85, level - 1);
-        
-        // Limite de segurança
-        if (speed < 50) speed = 50;
-        
-        gameInterval = setInterval(draw, speed);
-        
-        // Efeito visual de upgrade
-        canvas.style.borderColor = "#fff";
-        setTimeout(() => canvas.style.borderColor = "#00ffff", 200);
+function checkLevel() {
+    // Nível 1 meta: 20 | Nível 2+ meta: 30 a mais cada
+    let metaParaProximoNivel = (level === 1) ? 20 : 20 + ((level - 1) * 30);
+
+    if (score >= metaParaProximoNivel) {
+        level++;
+        // Aumenta a velocidade (reduz o tempo do intervalo)
+        speed = Math.max(speed * 0.85, 50); 
+        clearInterval(loop);
+        loop = setInterval(draw, speed);
     }
 }
 
-/* ===== CONTROLES MOBILE CORRIGIDOS ===== */
-window.handleMove = function(event, direction) {
-    // IMPORTANTE: impede o navegador de tentar rolar a página ao tocar nos botões
-    if (event && event.cancelable) {
-        event.preventDefault();
-    }
-
-    if (!gameInterval) return;
-
-    // Lógica de direção (impede a cobra de morder o próprio pescoço)
-    if (direction === "up" && dy === 0) { dx = 0; dy = -SIZE; }
-    if (direction === "down" && dy === 0) { dx = 0; dy = SIZE; }
-    if (direction === "left" && dx === 0) { dx = -SIZE; dy = 0; }
-    if (direction === "right" && dx === 0) { dx = SIZE; dy = 0; }
-};
-
-// Previne o "pinch-to-zoom" e scroll acidental no jogo
-document.addEventListener('touchstart', function(e) {
-    if (e.target.tagName === 'BUTTON') {
-        e.preventDefault(); 
-    }
-}, { passive: false });
-
-async function gameOver() {
-    clearInterval(gameInterval);
-    gameInterval = null;
-
-    if (window.salvarRecordeDB) {
-        // Adicionamos o "await" para esperar o envio antes de recarregar
-        await window.salvarRecordeDB(score, "usuarios_snake");
-    }
-
-    alert("FIM DE JOGO!\nNível: " + level + "\nPontos: " + score);
-    location.reload(); 
+function updateHUD() {
+    if (scoreEl) scoreEl.innerText = score.toString().padStart(4, "0");
+    if (levelEl) levelEl.innerText = level;
 }
 
-window.startGame = function() {
-    if (gameInterval) return;
-    document.getElementById('startBtn').style.display = 'none';
-    getRandomFood();
-    gameInterval = setInterval(draw, speed);
+/* ==========================================================================
+   CONTROLES E RESPONSIVIDADE
+========================================================================== */
+function changeDir(dir) {
+    if (!loop) return;
+    if (dir === "up" && dy === 0) { dx = 0; dy = -SIZE; }
+    if (dir === "down" && dy === 0) { dx = 0; dy = SIZE; }
+    if (dir === "left" && dx === 0) { dx = -SIZE; dy = 0; }
+    if (dir === "right" && dx === 0) { dx = SIZE; dy = 0; }
+}
+
+window.handleMove = (e, dir) => {
+    if (e && e.cancelable) e.preventDefault();
+    changeDir(dir);
 };
 
-window.addEventListener('keydown', e => {
-    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
-    if (e.key === "ArrowUp" && dy === 0) { dx = 0; dy = -SIZE; }
-    if (e.key === "ArrowDown" && dy === 0) { dx = 0; dy = SIZE; }
-    if (e.key === "ArrowLeft" && dx === 0) { dx = -SIZE; dy = 0; }
-    if (e.key === "ArrowRight" && dx === 0) { dx = SIZE; dy = 0; }
+document.addEventListener("keydown", e => {
+    const k = e.key.toLowerCase();
+    if (k === "arrowup" || k === "w") changeDir("up");
+    if (k === "arrowdown" || k === "s") changeDir("down");
+    if (k === "arrowleft" || k === "a") changeDir("left");
+    if (k === "arrowright" || k === "d") changeDir("right");
 });
-/* ===== CONTROLES PARA CELULAR (TOUCH) ===== */
-window.handleMove = function(direction) {
-    if (!gameInterval) return;
 
-    if (direction === "up" && dy === 0) { dx = 0; dy = -SIZE; }
-    if (direction === "down" && dy === 0) { dx = 0; dy = SIZE; }
-    if (direction === "left" && dx === 0) { dx = -SIZE; dy = 0; }
-    if (direction === "right" && dx === 0) { dx = SIZE; dy = 0; }
-};
-
-// ESSENCIAL: Impede que o celular role a tela ao tocar nos botões de controle
-document.addEventListener('touchstart', function(e) {
-    if (e.target.tagName === 'BUTTON') {
-        e.preventDefault(); 
-    }
-}, { passive: false });
+function resizeCanvas() {
+    const size = Math.min(window.innerWidth * 0.90, 400);
+    canvas.width = Math.floor(size / SIZE) * SIZE;
+    canvas.height = Math.floor(size / SIZE) * SIZE;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
