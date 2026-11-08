@@ -3,7 +3,7 @@
 Resumo curto para começar uma sessão sem ler tudo. Regras de trabalho:
 `CLAUDE.md`. Notas e diário: Obsidian, `wasobsidia/Projetos/Jogos Clássicos/`.
 
-Atualizado em: 08/11/2026 (Etapa 4 — nível do jogador — concluída).
+Atualizado em: 08/11/2026 (Etapa 5 — segurança e acabamento — concluída no código).
 
 ## O que é
 
@@ -52,15 +52,17 @@ email e senha, recorde por jogo e ranking dos 10 melhores, no Firebase.
   (`50·(n−1)·n`), 15 conquistas, faixa de nível e painel no menu, aba Geral
   no ranking e nível ao lado do nome; 4º tema **Lousa da escola** liberado no
   nível 10. Progresso no navegador e no perfil (mesclados ao entrar).
-- Próxima: **Etapa 5** — `firestore.rules` versionado (só o dono grava,
-  recorde/XP só sobem, `itens_liberados` só servidor), sons, efeitos,
-  auditoria. Também pendente: publicar o site (aguarda ordem do usuário).
+- **Etapa 5 feita no código:** `firestore.rules` testado no emulador (7
+  testes, `npm run test:regras`), e-mail fora do perfil público (dono apaga
+  ao entrar), nível por fórmula com teto de XP (XP adulterado travava o
+  menu), sons com Web Audio + botão de mudo, ícone da aba, contraste.
+- **Falta publicar** (com o usuário): login no Firebase, site, depois regras.
+  Limpeza dos e-mails de quem não voltar: script de administrador (pendente).
+- Próxima: **Etapa 6** — loja (PIX) para temas e níveis difíceis; exige servidor.
 
 ## Pendências
 
 - Etapas 2 a 5 do roteiro (ver o plano de melhoria acima).
-- Trazer as regras do Firestore para o repositório e travar o recorde
-  (hoje o navegador grava qualquer valor).
 - Arquivos antigos sem uso aguardando OK para remover: `css/style.css`,
   `css/tetris.css`, `css/snake.css`, `css/Breakout.css` e `public/assets/*`.
 - Etapa 6: loja (PIX) para temas e níveis difíceis; exige servidor.

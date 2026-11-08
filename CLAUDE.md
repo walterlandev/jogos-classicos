@@ -43,8 +43,11 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
   Regra nova de jogo entra primeiro ali, com teste.
 - Local: `npx serve public` (ou qualquer servidor estático). Abrir o HTML
   direto pelo arquivo não funciona, porque `auth.js` é um módulo ES.
-- Publicar: `npx firebase-tools deploy --only hosting` (o CLI não está
-  instalado globalmente neste PC). Avise o usuário antes: é produção.
+- Publicar (produção; sempre com o OK do usuário, e o login no Firebase é
+  dele: `npx firebase login`):
+  1. site: `npx firebase deploy --only hosting`;
+  2. regras: `npx firebase deploy --only firestore:rules`.
+  Nessa ordem: o site antigo grava `email` no cadastro e seria recusado.
 
 ## Regras que não podem ser esquecidas
 
@@ -52,11 +55,13 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
    ignora a caixa e o Firebase Hosting não: `snake.png` em vez de
    `Snake.png` funciona aqui e quebra no ar. Confira cada `href`/`src`
    contra o nome exato do arquivo. Nomes novos: tudo em minúsculas.
-2. **O recorde é gravado pelo navegador** (`auth.js`, `updateDoc`), então
-   o ranking pode ser forjado por quem abrir o console. Sem backend, a
-   defesa possível são as regras do Firestore (só o dono escreve, recorde
-   numérico, só pode subir). As regras atuais **não estão no repositório**:
-   antes de mudar algo de banco, traga-as para `firestore.rules`.
+2. **O banco é protegido por `firestore.rules`** (versionado e testado):
+   perfil público sem dado pessoal (nunca grave e-mail nele), só o dono
+   altera, recordes/XP/níveis só sobem com teto, `itens_liberados` nunca
+   pelo navegador. **Mudou as regras ou um campo gravado pelo site? Rode
+   `npm run test:regras`** (emulador; precisa do Java em
+   `C:\Program Files\Microsoft\jdk-21.0.13.21-hotspotin` no PATH) e
+   acrescente o caso em `tests-regras/`. Campo novo no perfil = regra nova.
 3. **A `apiKey` do Firebase em `auth.js` não é segredo** (vai ao navegador
    de qualquer visitante). Segredo de verdade (conta de serviço, `.env`)
    nunca entra no repositório.
