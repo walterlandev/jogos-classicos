@@ -11,6 +11,7 @@ import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
 import { ligarToque } from './controles.js';
 import { registrarPartida, textosDoFim } from './progresso.js';
+import { tocar, ligarBotaoSom } from './som.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('snakeGame');
@@ -81,6 +82,7 @@ function agendar() {
 }
 
 function concluirFase() {
+    tocar('nivel');
     pontos += bonusFase(fase);
     fasesConcluidas++;
     fase++;
@@ -90,6 +92,7 @@ function concluirFase() {
 }
 
 function perderVida() {
+    tocar('vida');
     clearInterval(loop);
     vidas--;
     atualizarPlacar();
@@ -112,6 +115,7 @@ function tique() {
         if (cobra[0].x === ouro.x && cobra[0].y === ouro.y) {
             pontos += pontosFruta(fase, true);
             douradas++;
+            tocar('dourada');
             cobra = cobra.slice(0, Math.max(3, cobra.length - 3));
             ouro = null;
         } else {
@@ -123,6 +127,7 @@ function tique() {
     if (r.comeu) {
         pontos += pontosFruta(fase, false);
         frutasTotal++;
+        tocar('fruta');
         frutasFase++;
         paraOuro++;
         if (frutasFase >= metaDaFase(fase)) return concluirFase();
@@ -240,6 +245,7 @@ function togglePause() {
 }
 
 async function gameOver() {
+    tocar('fim');
     rodando = false;
     clearInterval(loop);
     loop = null;
@@ -314,6 +320,7 @@ window.addEventListener('perfilcarregado', e => {
 });
 
 ligarBotaoTema($('botaoTema'));
+ligarBotaoSom($('botaoSom'));
 aoMudarTema(desenhar);
 montarSeletorFase();
 desenhar();

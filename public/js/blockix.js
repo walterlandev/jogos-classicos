@@ -11,6 +11,7 @@ import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
 import { ligarToque } from './controles.js';
 import { registrarPartida, textosDoFim } from './progresso.js';
+import { tocar, ligarBotaoSom } from './som.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('canvas');
@@ -138,6 +139,7 @@ function guardar() {
 }
 
 function travar() {
+    tocar('travar');
     fundir(board, peca.matriz, peca.pos);
     const cheias = board.flatMap((linha, y) => (linha.every(v => v !== 0) ? [y] : []));
     const removidas = varrerLinhas(board);
@@ -151,6 +153,7 @@ function travar() {
         linhas += removidas;
         nivel = nivelPorLinhas(linhas, nivelInicial);
         if (!semMovimento.matches) brilho = { ys: cheias, desde: performance.now() };
+        tocar(nivel > nivelAntes ? 'nivel' : removidas === 4 ? 'quatro' : 'linha');
         if (nivel > nivelAntes) avisar(`Nível ${nivel}`);
         else if (r.quatroSeguidas) avisar('Quatro linhas seguidas!');
         else if (removidas === 4) avisar('Quatro linhas!');
@@ -335,6 +338,7 @@ function togglePause() {
 }
 
 async function gameOver() {
+    tocar('fim');
     isGameOver = true;
     cancelAnimationFrame(requestId);
     draw();
@@ -406,6 +410,7 @@ window.addEventListener('perfilcarregado', e => {
 });
 
 ligarBotaoTema($('botaoTema'));
+ligarBotaoSom($('botaoSom'));
 aoMudarTema(() => { draw(); desenharMinis(); });
 montarSeletorNivel();
 draw();

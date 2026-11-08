@@ -28,6 +28,10 @@ vermelho pintado, ficha amarela, noite azul.
 - Acabamento: topo vermelho com filete amarelo; máquina = gabinete com
   marquise amarela; botão principal = ficha (pílula com degrau embaixo);
   campo com moldura de madeira.
+- A sombra dura sob o botão principal (`0 4px 0`) é o degrau físico da
+  ficha/botão de fliperama: intencional neste tema.
+- Contraste: marca em creme `#fff6dc` sobre o vermelho; nome do jogo
+  `#8f141a` sobre o amarelo (o amarelo sobre vermelho só passa em letra grande).
 - Não pode: neon, brilho, gradiente.
 
 ### Manual do cartucho (`cartucho`)

@@ -90,6 +90,8 @@ a { color: inherit; text-underline-offset: 0.22em; }
 .botao-primario:active { box-shadow: var(--primario-sombra-ativa, none); }
 .botao-icone { width: 44px; padding: 0; }
 .topo .botao { --botao-texto: var(--topo-texto); }
+.acoes-topo { display: flex; gap: 8px; }
+.icone[hidden] { display: none; }
 
 /* --- Menu --- */
 .menu {

@@ -20,7 +20,7 @@
     --topo-fundo: #d7262e;
     --topo-texto: #fff6dc;
     --topo-borda: 6px solid #f6c026;
-    --marca-cor: #f6c026;
+    --marca-cor: #fff6dc;
     --marca-sombra: 3px 3px 0 #7d1015;
 
     --botao-fundo: transparent;
@@ -37,7 +37,7 @@
     --maquina-raio: 20px 20px 6px 6px;
     --maquina-sombra: inset 0 -8px 0 #6b4425;
     --nome-fundo: #f6c026;
-    --nome-texto: #b51f26;
+    --nome-texto: #8f141a;
     --nome-raio: 12px 12px 3px 3px;
     --nome-alinha: center;
     --tela-borda: 4px solid #2a2320;
@@ -84,7 +84,7 @@
 
 /* A ficha: botão principal em Bungee, letreiro nos títulos de seção. */
 [data-tema="fliperama"] .titulo-secao { color: var(--titulo-cor, #f6c026); }
-[data-tema="fliperama"] .painel .titulo-secao { color: #d7262e; }
+[data-tema="fliperama"] .painel .titulo-secao { color: #b51f26; }
 [data-tema="fliperama"] .botao:not(.botao-primario):hover { background: rgba(255, 255, 255, 0.12); }
 [data-tema="fliperama"] .painel .botao:not(.botao-primario):hover,
 [data-tema="fliperama"] dialog .botao:not(.botao-primario):hover { background: rgba(27, 42, 107, 0.08); }

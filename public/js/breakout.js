@@ -13,6 +13,7 @@ import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
 import { ligarToque } from './controles.js';
 import { registrarPartida, textosDoFim } from './progresso.js';
+import { tocar, ligarBotaoSom } from './som.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('gameCanvas');
@@ -113,6 +114,7 @@ function prepararFase() {
 }
 
 function proximaFase() {
+    tocar('nivel');
     somarPontos(bonusFase(fase));
     fase++;
     fasesConcluidas++;
@@ -121,6 +123,7 @@ function proximaFase() {
 }
 
 function perderVida() {
+    tocar('vida');
     vidas--;
     atualizarPlacar();
     if (vidas <= 0) return gameOver();
@@ -133,6 +136,7 @@ function perderVida() {
 }
 
 function aplicarPoder(tipo) {
+    tocar('poder');
     avisar(NOMES_PODER[tipo]);
     if (tipo === 'larga') {
         const centro = raqueteX + larguraRaquete() / 2;
@@ -183,6 +187,7 @@ function passoBola(b, dt) {
         if (b.vy > 0 && yAntes <= topo && b.y >= topo && b.x >= raqueteX - RAIO && b.x <= raqueteX + l + RAIO) {
             b.y = topo;
             rebatidas++;
+            tocar('raquete');
             Object.assign(b, rebaterNaRaquete(b.x, raqueteX, l, velocidade()));
             continue;
         }
@@ -199,6 +204,7 @@ function passoBola(b, dt) {
                 t.golpes--;
                 const quebrou = t.golpes <= 0;
                 somarPontos(pontosGolpe(t, quebrou));
+                tocar('tijolo');
                 if (quebrou) {
                     tijolosQuebrados++;
                     const poder = sortearPoder();
@@ -330,6 +336,7 @@ function registrarFaseMax() {
 
 /* --- Partida --- */
 async function gameOver() {
+    tocar('fim');
     rodando = false;
     cancelAnimationFrame(animationId);
     esquerda = direita = false;
@@ -431,6 +438,7 @@ window.addEventListener('perfilcarregado', e => {
 });
 
 ligarBotaoTema($('botaoTema'));
+ligarBotaoSom($('botaoSom'));
 aoMudarTema(render);
 tijolos = montarFase(1);
 bolas = [bolaPresa()];
