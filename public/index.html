@@ -9,11 +9,12 @@
     <script>try{var t=localStorage.getItem('tema');if(/^[a-z_]+$/.test(t))document.documentElement.dataset.tema=t}catch(e){}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Semi+Condensed:wght@500;600;700&family=Rubik+Mono+One&family=Rubik:wght@400;500;700&family=Silkscreen:wght@400;700&family=IBM+Plex+Sans+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Semi+Condensed:wght@500;600;700&family=Rubik+Mono+One&family=Rubik:wght@400;500;700&family=Silkscreen:wght@400;700&family=IBM+Plex+Sans+Condensed:wght@400;600;700&family=Cabin+Sketch:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/temas/fliperama.css">
     <link rel="stylesheet" href="css/temas/cartucho.css">
     <link rel="stylesheet" href="css/temas/lcd.css">
+    <link rel="stylesheet" href="css/temas/lousa.css">
 </head>
 <body>
     <a class="pular" href="#conteudo">Pular para os jogos</a>
@@ -32,6 +33,14 @@
     </header>
 
     <main class="menu" id="conteudo">
+        <section class="painel faixa-nivel" aria-labelledby="tituloNivel">
+            <p class="nivel-numero"><span id="tituloNivel">Nível</span> <strong id="nivelConta">1</strong></p>
+            <div class="nivel-progresso">
+                <div class="barra" role="progressbar" aria-labelledby="tituloNivel" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="barraNivel"><span id="barraNivelCheia"></span></div>
+                <p class="nivel-texto" id="textoNivel">0 de 100 XP para o nível 2</p>
+            </div>
+        </section>
+
         <section aria-labelledby="tituloJogos">
             <h1 class="titulo-secao" id="tituloJogos">Escolha um jogo</h1>
             <ul class="maquinas">
@@ -84,6 +93,7 @@
                     <button class="botao aba" type="button" role="tab" id="abaBlockix" aria-controls="painelBlockix" aria-selected="true">Blockix</button>
                     <button class="botao aba" type="button" role="tab" id="abaSnake" aria-controls="painelSnake" aria-selected="false" tabindex="-1">Snake</button>
                     <button class="botao aba" type="button" role="tab" id="abaBreakout" aria-controls="painelBreakout" aria-selected="false" tabindex="-1">Breakout</button>
+                    <button class="botao aba" type="button" role="tab" id="abaGeral" aria-controls="painelGeral" aria-selected="false" tabindex="-1">Geral</button>
                 </div>
                 <div role="tabpanel" id="painelBlockix" aria-labelledby="abaBlockix">
                     <table class="tabela-ranking">
@@ -103,6 +113,12 @@
                         <tbody id="rankingBreakout"><tr><td colspan="3">Carregando…</td></tr></tbody>
                     </table>
                 </div>
+                <div role="tabpanel" id="painelGeral" aria-labelledby="abaGeral" hidden>
+                    <table class="tabela-ranking">
+                        <thead><tr><th scope="col">Pos.</th><th scope="col">Jogador</th><th scope="col">XP</th></tr></thead>
+                        <tbody id="rankingGeral"><tr><td colspan="3">Carregando…</td></tr></tbody>
+                    </table>
+                </div>
             </section>
 
             <section class="painel" aria-labelledby="tituloTema">
@@ -110,6 +126,11 @@
                 <div id="seletorTema"></div>
             </section>
         </div>
+
+        <section class="painel" aria-labelledby="tituloConquistas">
+            <h2 class="titulo-secao" id="tituloConquistas">Conquistas <span class="contagem" id="contagemConquistas">0 de 15</span></h2>
+            <ul class="conquistas" id="listaConquistas"></ul>
+        </section>
     </main>
 
     <footer class="rodape">

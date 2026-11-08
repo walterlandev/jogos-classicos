@@ -54,7 +54,7 @@ export const TEMAS = {
         descricao: 'Quadro verde, giz colorido e moldura de madeira.',
         gratis: true,
         nivelMinimo: 10,
-        amostra: ['#22332c', '#eef0e8', '#f2df7a', '#f2a6b8'],
+        amostra: ['#7a5233', '#eef0e8', '#f2df7a', '#f2a6b8'],
         canvas: {
             fundo: '#22332c', vazio: null,
             pecas: [null, '#9fd0f0', '#d6b0f2', '#f2a6b8', '#b5e3a3', '#f5c38a', '#eef0e8', '#f2df7a'],

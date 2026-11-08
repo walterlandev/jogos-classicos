@@ -10,6 +10,7 @@ import {
 import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
 import { ligarToque } from './controles.js';
+import { registrarPartida, textosDoFim } from './progresso.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('canvas');
@@ -39,6 +40,8 @@ let guardada = null;
 let podeGuardar = true;
 let pontos = 0;
 let linhas = 0;
+let quatros = 0;
+let maiorCombo = 0;
 let nivel = 1;
 let nivelInicial = 1;
 let nivelMax = lerNivelMaxLocal();
@@ -142,6 +145,8 @@ function travar() {
     const r = pontuar(removidas, nivel, estadoPontos);
     estadoPontos = { combo: r.combo, b2b: r.b2b };
     pontos += r.pontos;
+    if (removidas === 4) quatros++;
+    maiorCombo = Math.max(maiorCombo, r.combo);
     if (removidas > 0) {
         linhas += removidas;
         nivel = nivelPorLinhas(linhas, nivelInicial);
@@ -301,6 +306,8 @@ function startGame() {
     podeGuardar = true;
     pontos = 0;
     linhas = 0;
+    quatros = 0;
+    maiorCombo = 0;
     nivelInicial = Number(seletorNivel.value) || 1;
     nivel = nivelInicial;
     estadoPontos = { combo: -1, b2b: false };
@@ -335,12 +342,13 @@ async function gameOver() {
     const total = pontos;
     tituloInicio.textContent = 'Fim de jogo';
     botaoJogar.textContent = 'Jogar de novo';
-    mostrarFimDeJogo(camadaInicio, { detalhe: `Nível ${nivel}, ${linhas} linhas`, pontos: total, recordeNovo: false });
+    const extras = textosDoFim(registrarPartida('blockix', { linhas, quatros, maiorCombo, nivelMax: nivel }));
+    mostrarFimDeJogo(camadaInicio, { detalhe: `Nível ${nivel}, ${linhas} linhas`, pontos: total, recordeNovo: false, extras });
     camadaInicio.hidden = false;
     botaoJogar.focus();
     const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(total, 'blockix') : false;
     if (recordeNovo && isGameOver) {
-        mostrarFimDeJogo(camadaInicio, { detalhe: `Nível ${nivel}, ${linhas} linhas`, pontos: total, recordeNovo });
+        mostrarFimDeJogo(camadaInicio, { detalhe: `Nível ${nivel}, ${linhas} linhas`, pontos: total, recordeNovo, extras });
     }
 }
 

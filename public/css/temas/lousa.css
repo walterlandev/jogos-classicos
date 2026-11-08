@@ -1,0 +1,88 @@
+/* Tema: Lousa da escola (liberado no nível 10 da conta).
+   Quadro verde-escuro, giz branco e colorido, moldura de madeira. */
+[data-tema="lousa"] {
+    --esquema: dark;
+    --fonte-titulo: 'Cabin Sketch', sans-serif;
+    --fonte-texto: 'Patrick Hand', sans-serif;
+    --fonte-numero: 'Cabin Sketch', sans-serif;
+    --fonte-botao: 'Patrick Hand', sans-serif;
+    --peso-titulo: 700;
+
+    --fundo: #1d2b25;
+    --texto: #eef0e8;
+    --texto-suave: #c9d1c4;
+    --acento: #f2df7a;
+    --acento-hover: #f7e893;
+    --acento-texto: #1d2b25;
+    --foco: #f2df7a;
+    --erro: #f2a6b8;
+    --sucesso: #b5e3a3;
+
+    --topo-fundo: #7a5233;
+    --topo-texto: #f4efe2;
+    --topo-borda: 4px solid #5c3c24;
+    --marca-cor: #f4efe2;
+
+    --botao-fundo: transparent;
+    --botao-fundo-hover: rgba(238, 240, 232, 0.08);
+    --botao-texto: #eef0e8;
+    --botao-borda: 2px solid rgba(238, 240, 232, 0.55);
+    --raio-botao: 8px;
+    --primario-borda: 0;
+    --primario-sombra: 0 3px 0 #b9a94f;
+    --primario-sombra-ativa: 0 1px 0 #b9a94f;
+
+    --maquina-fundo: #2b3d35;
+    --maquina-texto: #eef0e8;
+    --maquina-borda: 6px solid #7a5233;
+    --maquina-raio: 6px;
+    --nome-fundo: transparent;
+    --nome-texto: #f2df7a;
+    --nome-alinha: center;
+    --tela-borda: 2px solid rgba(238, 240, 232, 0.3);
+    --tela-raio: 4px;
+
+    --painel-fundo: #2b3d35;
+    --painel-texto: #eef0e8;
+    --painel-rotulo: #c9d1c4;
+    --painel-borda: 2px solid rgba(238, 240, 232, 0.25);
+    --painel-raio: 8px;
+    --painel-foco: #f2df7a;
+    --linha: 1px dashed rgba(238, 240, 232, 0.3);
+    --opcao-fundo: #22332c;
+    --opcao-borda: 2px solid rgba(238, 240, 232, 0.25);
+    --opcao-marcada: #f2df7a;
+    --entrada-fundo: #22332c;
+    --entrada-texto: #eef0e8;
+    --entrada-borda: 2px solid #c9d1c4;
+    --raio-entrada: 6px;
+    --barra-fundo: rgba(238, 240, 232, 0.15);
+
+    --placar-fundo: #2b3d35;
+    --placar-texto: #f2df7a;
+    --placar-rotulo: #c9d1c4;
+    --placar-borda: 2px solid rgba(238, 240, 232, 0.25);
+    --placar-raio: 6px;
+
+    --moldura: 10px;
+    --moldura-cor: #7a5233;
+    --moldura-raio: 6px;
+    --camada-fundo: rgba(34, 51, 44, 0.9);
+    --camada-texto: #eef0e8;
+    --camada-texto-suave: #c9d1c4;
+    --fim-fundo: #2b3d35;
+    --fim-texto: #eef0e8;
+    --fim-borda: 2px dashed #eef0e8;
+    --fim-destaque: #f2df7a;
+
+    --controle-fundo: #2b3d35;
+    --controle-texto: #eef0e8;
+    --controle-borda: 2px solid rgba(238, 240, 232, 0.4);
+    --controle-raio: 12px;
+    --controle-sombra: 0 3px 0 #15201b;
+    --controle-sombra-ativa: 0 1px 0 #15201b;
+}
+
+[data-tema="lousa"] .titulo-secao { color: #f2df7a; }
+[data-tema="lousa"] .placar-item dt { font-size: 16px; }
+[data-tema="lousa"] body, [data-tema="lousa"] .botao { letter-spacing: 0.01em; }

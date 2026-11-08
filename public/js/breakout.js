@@ -12,6 +12,7 @@ import { velocidadeDaFase, aceleracao, rebaterNaRaquete } from './logica/bola.js
 import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
 import { ligarToque } from './controles.js';
+import { registrarPartida, textosDoFim } from './progresso.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('gameCanvas');
@@ -48,6 +49,9 @@ let vidas = 3;
 let fase = 1;
 let faseMax = lerFaseMaxLocal();
 let rebatidas = 0;
+let tijolosQuebrados = 0;
+let fasesConcluidas = 0;
+let pegouMulti = false;
 let relogio = 0;          // ms de jogo (para na pausa)
 let larguraAte = 0;
 let lentaAte = 0;
@@ -111,6 +115,7 @@ function prepararFase() {
 function proximaFase() {
     somarPontos(bonusFase(fase));
     fase++;
+    fasesConcluidas++;
     avisar(`Fase ${fase}`);
     prepararFase();
 }
@@ -139,6 +144,7 @@ function aplicarPoder(tipo) {
         vidas++;
         atualizarPlacar();
     } else if (tipo === 'multi') {
+        pegouMulti = true;
         if (bolas.every(b => b.presa)) lancar();
         const novas = [];
         for (const b of bolas.filter(k => !k.presa)) {
@@ -194,6 +200,7 @@ function passoBola(b, dt) {
                 const quebrou = t.golpes <= 0;
                 somarPontos(pontosGolpe(t, quebrou));
                 if (quebrou) {
+                    tijolosQuebrados++;
                     const poder = sortearPoder();
                     if (poder) poderes.push({ x: t.x + GRADE.largura / 2, y: t.y + GRADE.altura / 2, tipo: poder });
                 }
@@ -330,18 +337,22 @@ async function gameOver() {
     const total = pontos;
     tituloInicio.textContent = 'Fim de jogo';
     botaoJogar.textContent = 'Jogar de novo';
-    mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo: false, detalhe: `Chegou à fase ${fase}` });
+    const extras = textosDoFim(registrarPartida('breakout', { tijolos: tijolosQuebrados, fasesConcluidas, faseMax: fase, pegouMulti }));
+    mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo: false, detalhe: `Chegou à fase ${fase}`, extras });
     camadaInicio.hidden = false;
     botaoJogar.focus();
     const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(total, 'breakout') : false;
     if (recordeNovo && !rodando) {
-        mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo, detalhe: `Chegou à fase ${fase}` });
+        mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo, detalhe: `Chegou à fase ${fase}`, extras });
     }
 }
 
 function startGame() {
     if (rodando) return;
     pontos = 0;
+    tijolosQuebrados = 0;
+    fasesConcluidas = 0;
+    pegouMulti = false;
     vidas = 3;
     fase = Number(seletorFase.value) || 1;
     relogio = 0;

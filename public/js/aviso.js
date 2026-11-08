@@ -2,7 +2,7 @@
 // Todo texto entra por textContent: nada vindo do jogador vira HTML.
 
 // titulo (opcional, grande), pontos (destaque), detalhe (opcional, pequeno).
-export function mostrarFimDeJogo(area, { titulo, pontos, recordeNovo, detalhe }) {
+export function mostrarFimDeJogo(area, { titulo, pontos, recordeNovo, detalhe, extras = [] }) {
     let faixa = area.querySelector('.fim-de-jogo');
     if (!faixa) {
         faixa = document.createElement('div');
@@ -19,6 +19,7 @@ export function mostrarFimDeJogo(area, { titulo, pontos, recordeNovo, detalhe })
     faixa.replaceChildren(linha(`${pontos} pontos`, 'fim-pontos'));
     if (titulo) faixa.prepend(linha(titulo, 'fim-titulo'));
     if (detalhe) faixa.append(linha(detalhe, 'fim-detalhe'));
+    for (const extra of extras) faixa.append(linha(extra, 'fim-extra'));
     if (recordeNovo) faixa.append(linha('Recorde novo!', 'fim-recorde'));
     faixa.hidden = false;
 }

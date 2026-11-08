@@ -10,6 +10,7 @@ import {
 import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
 import { ligarToque } from './controles.js';
+import { registrarPartida, textosDoFim } from './progresso.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('snakeGame');
@@ -38,6 +39,10 @@ let pontos = 0;
 let vidas = 3;
 let fase = 1;
 let frutasFase = 0;
+let frutasTotal = 0;
+let fasesConcluidas = 0;
+let douradas = 0;
+let maiorTamanho = 3;
 let faseMax = lerFaseMaxLocal();
 let intervalo = intervaloDaFase(1);
 let piscar = false;
@@ -77,6 +82,7 @@ function agendar() {
 
 function concluirFase() {
     pontos += bonusFase(fase);
+    fasesConcluidas++;
     fase++;
     registrarFaseMax();
     iniciarFase();
@@ -100,10 +106,12 @@ function tique() {
     const r = passo(cobra, direcao, comida, GRADE, mapa);
     if (r.morreu) return perderVida();
     cobra = r.cobra;
+    maiorTamanho = Math.max(maiorTamanho, cobra.length);
 
     if (ouro) {
         if (cobra[0].x === ouro.x && cobra[0].y === ouro.y) {
             pontos += pontosFruta(fase, true);
+            douradas++;
             cobra = cobra.slice(0, Math.max(3, cobra.length - 3));
             ouro = null;
         } else {
@@ -114,6 +122,7 @@ function tique() {
 
     if (r.comeu) {
         pontos += pontosFruta(fase, false);
+        frutasTotal++;
         frutasFase++;
         paraOuro++;
         if (frutasFase >= metaDaFase(fase)) return concluirFase();
@@ -204,6 +213,10 @@ function startGame() {
     if (rodando) return;
     pontos = 0;
     vidas = 3;
+    frutasTotal = 0;
+    fasesConcluidas = 0;
+    douradas = 0;
+    maiorTamanho = 3;
     fase = Number(seletorFase.value) || 1;
     rodando = true;
     pausado = false;
@@ -233,12 +246,13 @@ async function gameOver() {
     const total = pontos;
     tituloInicio.textContent = 'Fim de jogo';
     botaoJogar.textContent = 'Jogar de novo';
-    mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo: false, detalhe: `Chegou à fase ${fase}` });
+    const extras = textosDoFim(registrarPartida('snake', { frutas: frutasTotal, fasesConcluidas, faseMax: fase, douradas, maiorTamanho }));
+    mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo: false, detalhe: `Chegou à fase ${fase}`, extras });
     camadaInicio.hidden = false;
     botaoJogar.focus();
     const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(total, 'snake') : false;
     if (recordeNovo && !rodando) {
-        mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo, detalhe: `Chegou à fase ${fase}` });
+        mostrarFimDeJogo(camadaInicio, { pontos: total, recordeNovo, detalhe: `Chegou à fase ${fase}`, extras });
     }
 }
 

@@ -50,6 +50,16 @@ Minigame de bolso: corpo grafite, tela de cristal líquido, botões laranja.
   cruz de direção preta, botões de ação redondos laranja.
 - Não pode: cor dentro da tela LCD.
 
+### Lousa da escola (`lousa`, liberado no nível 10 da conta)
+Quadro-negro da escola: verde-escuro, escrita de giz, moldura de madeira.
+Recompensa de progresso (`nivelMinimo: 10` no registro).
+- Cores: quadro `#1d2b25`/`#2b3d35`, giz `#eef0e8`, giz amarelo `#f2df7a`,
+  rosa `#f2a6b8`, azul `#9fd0f0`, verde `#b5e3a3`, madeira `#7a5233`.
+- Fontes: **Cabin Sketch** (títulos, números), **Patrick Hand** (texto).
+- Acabamento: máquina e campo com moldura de madeira; bordas de giz
+  semitransparentes; fim de jogo com contorno tracejado de giz.
+- Não pode: cores saturadas fora do giz, sombra suave.
+
 ## Regras comuns
 
 - Texto com contraste ≥ 4,5:1 (títulos grandes ≥ 3:1) em todo tema.

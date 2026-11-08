@@ -8,8 +8,8 @@ import {
 import {
     getFirestore, doc, getDoc, setDoc, updateDoc, query, collection, orderBy, limit, getDocs,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { aplicarTema, aoMudarTema, definirItensLiberados } from './temas.js';
-import { podeUsar } from './logica/temas.js';
+import { aplicarTema, aoMudarTema, definirItensLiberados, temaDisponivel } from './temas.js';
+import { nivelDaConta } from './logica/progresso.js';
 
 // Config web do Firebase: não é segredo (vai ao navegador de todo visitante).
 const firebaseConfig = {
@@ -60,10 +60,11 @@ onAuthStateChanged(auth, async (user) => {
         texto(el('userName'), String(dados.nome || 'jogador'));
         mostrarRecordes(dados);
         definirItensLiberados(dados.itens_liberados);
-        if (dados.tema && podeUsar(dados.tema, dados.itens_liberados)) {
+        // Primeiro soma o progresso (nível libera temas), depois aplica o tema do perfil.
+        window.dispatchEvent(new CustomEvent('perfilcarregado', { detail: dados }));
+        if (dados.tema && temaDisponivel(dados.tema)) {
             aplicarTema(dados.tema, { origem: 'perfil' });
         }
-        window.dispatchEvent(new CustomEvent('perfilcarregado', { detail: dados }));
     } else {
         document.querySelectorAll('[data-recorde]').forEach(n => texto(n, '—'));
         definirItensLiberados([]);
@@ -119,6 +120,17 @@ window.salvarNivelMaxDB = async (jogo, nivel) => {
         }
     } catch (e) {
         console.error('Erro ao salvar o nível máximo:', e);
+    }
+};
+
+// Progresso (XP, conquistas, estatísticas). `xp` no topo serve para o ranking Geral.
+window.salvarProgressoDB = async (progresso) => {
+    const user = auth.currentUser;
+    if (!user || !progresso) return;
+    try {
+        await updateDoc(doc(db, 'usuarios', user.uid), { progresso, xp: Number(progresso.xp) || 0 });
+    } catch (e) {
+        console.error('Erro ao salvar o progresso:', e);
     }
 };
 
@@ -214,6 +226,11 @@ async function carregarRanking(campo, idTabela) {
         snap.forEach(d => {
             const dados = d.data();
             const tr = linha(`${posicao}º`, String(dados.nome ?? 'jogador'), `${Number(dados[campo]) || 0}`);
+            // Nível da conta ao lado do nome.
+            const tag = document.createElement('span');
+            tag.className = 'nivel-tag';
+            tag.textContent = `Nv ${nivelDaConta(Number(dados.xp) || 0).nivel}`;
+            tr.children[1].append(' ', tag);
             if (auth.currentUser && d.id === auth.currentUser.uid) tr.classList.add('voce');
             corpo.append(tr);
             posicao++;
@@ -234,3 +251,4 @@ async function carregarRanking(campo, idTabela) {
 carregarRanking('recorde_blockix', 'rankingBlockix');
 carregarRanking('recorde_snake_v2', 'rankingSnake');
 carregarRanking('recorde_breakout_v2', 'rankingBreakout');
+carregarRanking('xp', 'rankingGeral');

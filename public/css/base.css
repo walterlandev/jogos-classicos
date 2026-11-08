@@ -177,6 +177,7 @@ a { color: inherit; text-underline-offset: 0.22em; }
 .tabela-ranking th:last-child, .tabela-ranking td:last-child { text-align: right; }
 .tabela-ranking td:first-child { width: 3.5em; }
 .tabela-ranking tr.voce td { font-weight: 700; }
+.tabela-ranking td[colspan] { text-align: left; }
 
 .seletor-tema { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
 .opcao-tema {
@@ -201,6 +202,8 @@ a { color: inherit; text-underline-offset: 0.22em; }
 /* Menu no celular: máquinas compactas (miniatura à esquerda) e topo enxuto. */
 @media (max-width: 600px) {
     .menu { padding-top: 24px; gap: 32px; }
+    .faixa-nivel { gap: 14px; }
+    .nivel-numero strong { font-size: 32px; }
     .topo .botao { min-height: 40px; padding: 6px 12px; font-size: 14px; }
     .maquinas { gap: 16px; }
     .maquina {
@@ -214,6 +217,34 @@ a { color: inherit; text-underline-offset: 0.22em; }
     .maquina-recorde { grid-area: recorde; margin: 12px 0 8px; }
     .maquina .botao-primario { grid-area: jogar; align-self: end; }
 }
+
+/* --- Nível da conta e conquistas --- */
+.faixa-nivel { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 20px; }
+.nivel-numero { margin: 0; display: grid; justify-items: center; line-height: 1.1; font-weight: 600; }
+.nivel-numero strong { font-family: var(--fonte-numero, var(--fonte-titulo)); font-weight: var(--peso-titulo, 400); font-size: 40px; }
+.barra {
+    height: 14px; overflow: hidden;
+    background: var(--barra-fundo, rgba(0, 0, 0, 0.12));
+    border: var(--barra-borda, 0); border-radius: var(--raio-botao);
+}
+.barra span { display: block; height: 100%; width: 0; background: var(--acento); transition: width 400ms ease-out; }
+.nivel-texto { margin: 8px 0 0; font-size: 15px; color: var(--painel-rotulo, inherit); font-variant-numeric: tabular-nums; }
+.titulo-secao .contagem { font-family: var(--fonte-texto); font-size: 15px; font-weight: 600; margin-left: 8px; color: var(--painel-rotulo, inherit); }
+.conquistas {
+    list-style: none; margin: 0; padding: 0;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px;
+}
+.conquista { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: var(--opcao-borda); border-radius: var(--opcao-raio, var(--painel-raio)); }
+.conquista div { display: grid; gap: 2px; }
+.conquista span { font-size: 14px; color: var(--painel-rotulo, inherit); }
+.conquista:not(.obtida) { opacity: 0.62; }
+.conquista.obtida .icone { color: var(--opcao-marcada, currentColor); }
+.nivel-tag {
+    display: inline-block; padding: 0 6px; font-size: 12px; font-weight: 700; line-height: 1.5;
+    border: 1px solid currentColor; border-radius: 999px; vertical-align: 1px;
+}
+.opcao-tema.bloqueada { cursor: not-allowed; opacity: 0.6; }
+.fim-de-jogo .fim-extra { font-size: 14px; font-weight: 700; color: var(--fim-destaque); }
 
 /* --- Diálogos e formulários --- */
 dialog {
