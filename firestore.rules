@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// Regras do Firestore dos Jogos Clássicos. Testadas em tests-regras/ (npm run test:regras).
+// O perfil é público (ranking), por isso não guarda dado pessoal (nada de e-mail).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /usuarios/{uid} {
+      function dono() { return request.auth != null && request.auth.uid == uid; }
+      function verificado() { return request.auth.token.email_verified == true; }
+      function novo() { return request.resource.data; }
+      function velho() { return resource.data; }
+      function mudou() { return novo().diff(velho()).affectedKeys(); }
+
+      // Inteiro que só sobe e tem teto (ou não mudou).
+      function sobe(campo, teto) {
+        return !(campo in mudou())
+          || (novo()[campo] is int && novo()[campo] >= velho().get(campo, 0) && novo()[campo] <= teto);
+      }
+
+      // XP e progresso andam juntos; XP só sobe, até 50.000 por gravação.
+      function progressoValido() {
+        return !('xp' in mudou() || 'progresso' in mudou()) || (
+          novo().xp is int
+          && novo().xp >= velho().get('xp', 0)
+          && novo().xp <= velho().get('xp', 0) + 50000
+          && novo().xp <= 1000000000
+          && novo().progresso is map
+          && novo().progresso.keys().hasOnly(['xp', 'conquistas', 'est'])
+          && novo().progresso.xp == novo().xp
+          && novo().progresso.conquistas is list
+          && novo().progresso.conquistas.size() <= 15
+          && novo().progresso.est is map
+        );
+      }
+
+      function zerado(campo) { return !(campo in novo()) || novo()[campo] == 0; }
+
+      allow read: if true;
+
+      allow create: if dono()
+        && novo().keys().hasOnly(['nome', 'recorde_blockix', 'recorde_snake', 'recorde_tetris',
+                                  'recorde_breakout', 'recorde_breakout_v2', 'recorde_snake_v2'])
+        && novo().nome is string && novo().nome.size() >= 1 && novo().nome.size() <= 20
+        && zerado('recorde_blockix') && zerado('recorde_snake') && zerado('recorde_tetris')
+        && zerado('recorde_breakout') && zerado('recorde_breakout_v2') && zerado('recorde_snake_v2');
+
+      allow update: if dono() && verificado()
+        && mudou().hasOnly(['recorde_blockix', 'recorde_snake_v2', 'recorde_breakout_v2', 'data_recorde',
+                            'tema', 'progresso', 'xp',
+                            'nivel_max_blockix', 'nivel_max_breakout', 'nivel_max_snake', 'email'])
+        // o e-mail antigo só pode ser removido
+        && (!('email' in mudou()) || !('email' in novo()))
+        && sobe('recorde_blockix', 100000000)
+        && sobe('recorde_snake_v2', 10000000)
+        && sobe('recorde_breakout_v2', 10000000)
+        && sobe('nivel_max_blockix', 10000)
+        && sobe('nivel_max_breakout', 10000)
+        && sobe('nivel_max_snake', 10000)
+        && (!('data_recorde' in mudou()) || novo().data_recorde is timestamp)
+        && (!('tema' in mudou()) || (novo().tema is string && novo().tema.size() <= 20))
+        && progressoValido();
+
+      allow delete: if false;
+    }
+
+    // Qualquer outra coleção: fechada.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

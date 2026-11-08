@@ -6,7 +6,7 @@ import {
     onAuthStateChanged, signOut, sendEmailVerification,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, query, collection, orderBy, limit, getDocs,
+    getFirestore, doc, getDoc, setDoc, updateDoc, deleteField, query, collection, orderBy, limit, getDocs,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { aplicarTema, aoMudarTema, definirItensLiberados, temaDisponivel } from './temas.js';
 import { nivelDaConta } from './logica/progresso.js';
@@ -57,6 +57,11 @@ onAuthStateChanged(auth, async (user) => {
         }
     }
     if (dados) {
+        // Perfis antigos guardavam o e-mail no documento público: o dono apaga ao entrar.
+        if ('email' in dados) {
+            updateDoc(doc(db, 'usuarios', user.uid), { email: deleteField() })
+                .catch(e => console.error('Erro ao remover o e-mail do perfil:', e));
+        }
         texto(el('userName'), String(dados.nome || 'jogador'));
         mostrarRecordes(dados);
         definirItensLiberados(dados.itens_liberados);
@@ -166,7 +171,7 @@ registerForm?.addEventListener('submit', async (e) => {
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, senha);
         await setDoc(doc(db, 'usuarios', cred.user.uid), {
-            nome, email, recorde_blockix: 0, recorde_snake: 0, recorde_tetris: 0, recorde_breakout: 0, recorde_breakout_v2: 0, recorde_snake_v2: 0,
+            nome, recorde_blockix: 0, recorde_snake: 0, recorde_tetris: 0, recorde_breakout: 0, recorde_breakout_v2: 0, recorde_snake_v2: 0,
         });
         await sendEmailVerification(cred.user);
         await signOut(auth);
