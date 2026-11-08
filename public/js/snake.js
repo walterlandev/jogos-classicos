@@ -1,206 +1,198 @@
 /* ==========================================================================
-   CONFIGURAÇÃO INICIAL
+   Snake — tela, laço e controles.
+   A lógica (passo, fila de comandos, níveis, bônus) mora em logica/cobra.js.
 ========================================================================== */
-const canvas = document.getElementById("snakeGame");
-const ctx = canvas.getContext("2d");
-const scoreEl = document.getElementById("snakeScore");
-const levelEl = document.getElementById("snakeLevel");
-const bestEl = document.getElementById("snakeBest");
+import {
+    GRADE, DIRECOES, enfileirar, passo, celulaLivre,
+    nivelPorPontos, intervaloDoNivel, marcoDeBonus,
+} from './logica/cobra.js';
+import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 
-// Tenta encontrar qualquer um dos botões de início possíveis
-const btnStart = document.querySelector(".btn-start") || 
-                 document.querySelector(".btn-start-overlay") || 
-                 document.getElementById("startBtnPC");
+const canvas = document.getElementById('snakeGame');
+const ctx = canvas.getContext('2d');
+const area = canvas.parentElement;
+const scoreEl = document.getElementById('snakeScore');
+const levelEl = document.getElementById('snakeLevel');
+const btnStart = document.querySelector('.btn-start');
 
-const SIZE = 20;
-let snake, food, dx, dy, score, level, speed, loop;
-let isBonus = false;
-let bonusTimer = null;
+const DURACAO_BONUS_MS = 10000;
 
-/* ==========================================================================
-   FUNÇÕES DE INÍCIO E GAME OVER
-========================================================================== */
+let cobra = [];
+let comida = null;
+let direcao = DIRECOES.right;
+let fila = [];
+let score = 0;
+let level = 1;
+let intervalo = intervaloDoNivel(1);
+let ultimoMarco = 0;
+let bonusRestanteMs = 0;
+let loop = null;
+let rodando = false;
+let pausado = false;
+let celula = 20; // pixels por célula; só muda a escala, nunca a grade
+
+/* --- Partida --- */
 window.startGame = () => {
-    if (loop) return; // Evita iniciar dois loops ao mesmo tempo
-
-    // Esconde o botão que foi clicado
-    if (btnStart) btnStart.style.display = "none";
-
-    // Reinicia variáveis do jogo
-    snake = [
-        { x: SIZE * 5, y: SIZE * 5 },
-        { x: SIZE * 4, y: SIZE * 5 },
-        { x: SIZE * 3, y: SIZE * 5 }
-    ];
-    dx = SIZE; 
-    dy = 0;
-    score = 0; 
-    level = 1; 
-    speed = 200;
-    isBonus = false;
-
+    if (rodando) return;
+    cobra = [{ x: 5, y: 5 }, { x: 4, y: 5 }, { x: 3, y: 5 }];
+    direcao = DIRECOES.right;
+    fila = [];
+    score = 0;
+    level = 1;
+    intervalo = intervaloDoNivel(1);
+    ultimoMarco = 0;
+    bonusRestanteMs = 0;
+    comida = celulaLivre(cobra, GRADE);
+    rodando = true;
+    pausado = false;
+    if (btnStart) btnStart.style.display = 'none';
+    esconderFimDeJogo(area);
     updateHUD();
-    spawnFood();
-    
-    // Inicia o ciclo do jogo
-    if (loop) clearInterval(loop);
-    loop = setInterval(draw, speed);
+    agendar();
+    desenhar();
 };
 
-function gameOver() {
+function agendar() {
+    clearInterval(loop);
+    loop = setInterval(tique, intervalo);
+}
+
+window.togglePause = () => {
+    if (!rodando) return;
+    pausado = !pausado;
+    if (pausado) {
+        clearInterval(loop);
+        desenhar();
+    } else {
+        agendar();
+    }
+};
+
+async function gameOver() {
+    rodando = false;
     clearInterval(loop);
     loop = null;
-    if (bonusTimer) clearTimeout(bonusTimer);
-    
     if (btnStart) {
-        btnStart.innerText = "TENTAR NOVAMENTE";
-        btnStart.style.display = "block";
+        btnStart.textContent = 'TENTAR NOVAMENTE';
+        btnStart.style.display = 'block';
     }
-
-    ctx.fillStyle = "white";
-    ctx.font = "16px 'Press Start 2P'";
-    ctx.textAlign = "center";
-    ctx.fillText("GAME OVER", canvas.width / 2, canvas.height / 2);
+    const pontos = score;
+    mostrarFimDeJogo(area, { titulo: 'FIM DE JOGO', pontos, recordeNovo: false });
+    const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(pontos, 'snake') : false;
+    if (recordeNovo && !rodando) mostrarFimDeJogo(area, { titulo: 'FIM DE JOGO', pontos, recordeNovo });
 }
 
-/* ==========================================================================
-   LÓGICA DA COMIDA E DO BÔNUS (REGRAS NOVAS)
-========================================================================== */
-function spawnFood() {
-    // Se o score é 20, 40, 60... e ainda não ativamos o modo bônus
-    if (score > 0 && score % 20 === 0 && !isBonus) {
-        isBonus = true;
-        
-        // O bônus dura 10 segundos. Se não comer, ele volta a ser comida normal.
-        if (bonusTimer) clearTimeout(bonusTimer);
-        bonusTimer = setTimeout(() => {
-            if (isBonus) {
-                isBonus = false;
-                spawnFood(); // Troca a posição para virar comida normal
-            }
-        }, 10000);
+/* --- Tique do jogo --- */
+function tique() {
+    direcao = fila.shift() ?? direcao;
+    const emBonus = bonusRestanteMs > 0;
+    const r = passo(cobra, direcao, comida, GRADE);
+    if (r.morreu) {
+        desenhar();
+        gameOver();
+        return;
     }
+    cobra = r.cobra;
 
-    food = {
-        x: Math.floor(Math.random() * (canvas.width / SIZE)) * SIZE,
-        y: Math.floor(Math.random() * (canvas.height / SIZE)) * SIZE
-    };
-
-    // Impede que a comida nasça em cima da cobra
-    if (snake.some(p => p.x === food.x && p.y === food.y)) spawnFood();
-}
-
-/* ==========================================================================
-   DESENHO E ATUALIZAÇÃO
-========================================================================== */
-function draw() {
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Desenha Peça (Bônus Arco-íris ou Comida Rosa)
-    if (isBonus) {
-        const hue = (Date.now() / 2) % 360;
-        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
-        ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
-        ctx.shadowBlur = 20;
-    } else {
-        ctx.fillStyle = "#ff00ff";
-        ctx.shadowColor = "#ff00ff";
-        ctx.shadowBlur = 10;
-    }
-    ctx.fillRect(food.x, food.y, SIZE - 1, SIZE - 1);
-
-    // Desenha Cobra
-    ctx.shadowColor = "#00ffff";
-    snake.forEach((p, i) => {
-        ctx.shadowBlur = i === 0 ? 20 : 10;
-        ctx.fillStyle = i === 0 ? "#fff" : "#00ffff";
-        ctx.fillRect(p.x, p.y, SIZE - 1, SIZE - 1);
-    });
-
-    ctx.shadowBlur = 0;
-    update();
-}
-
-function update() {
-    const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-
-    // Colisões
-    if (head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height ||
-        snake.some(p => p.x === head.x && p.y === head.y)) {
-        return gameOver();
-    }
-
-    snake.unshift(head);
-
-    // Quando a cobra come a peça
-    if (head.x === food.x && head.y === food.y) {
-        if (isBonus) {
-            score += 10; // Bônus dá 10 pontos
-            // EFEITO: Diminui a cobra em 5 pedaços (mantendo no mínimo 2)
-            for (let i = 0; i < 5; i++) {
-                if (snake.length > 2) snake.pop();
-            }
-            isBonus = false;
-            if (bonusTimer) clearTimeout(bonusTimer);
+    if (r.comeu) {
+        if (emBonus) {
+            score += 10;
+            // O bônus encurta a cobra em até 5 partes, mantendo no mínimo 2.
+            cobra = cobra.slice(0, Math.max(2, cobra.length - 5));
+            bonusRestanteMs = 0;
         } else {
-            score += 1; // Comida normal dá 1 ponto
+            score += 1;
         }
-
-        checkLevel();
-        spawnFood();
+        const marco = marcoDeBonus(score);
+        if (score > 0 && marco > ultimoMarco) {
+            ultimoMarco = marco;
+            bonusRestanteMs = DURACAO_BONUS_MS;
+        }
+        comida = celulaLivre(cobra, GRADE);
+        const novoNivel = nivelPorPontos(score);
+        if (novoNivel !== level) {
+            level = novoNivel;
+            intervalo = intervaloDoNivel(level);
+            agendar();
+        }
         updateHUD();
-    } else {
-        snake.pop();
+    } else if (emBonus) {
+        // O tempo do bônus corre por tique: a pausa congela o bônus junto.
+        bonusRestanteMs = Math.max(0, bonusRestanteMs - intervalo);
     }
+    desenhar();
 }
 
-function checkLevel() {
-    // Nível 1 meta: 20 | Nível 2+ meta: 30 a mais cada
-    let metaParaProximoNivel = (level === 1) ? 20 : 20 + ((level - 1) * 30);
+/* --- Desenho --- */
+function quadrado(p, cor, brilho) {
+    ctx.fillStyle = cor;
+    ctx.shadowColor = cor;
+    ctx.shadowBlur = brilho;
+    ctx.fillRect(p.x * celula, p.y * celula, celula - 1, celula - 1);
+}
 
-    if (score >= metaParaProximoNivel) {
-        level++;
-        // Aumenta a velocidade (reduz o tempo do intervalo)
-        speed = Math.max(speed * 0.85, 50); 
-        clearInterval(loop);
-        loop = setInterval(draw, speed);
+function desenhar() {
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (!cobra.length) return;
+
+    if (comida) {
+        if (bonusRestanteMs > 0) quadrado(comida, `hsl(${(Date.now() / 2) % 360}, 100%, 50%)`, 20);
+        else quadrado(comida, '#ff00ff', 10);
+    }
+    cobra.forEach((p, i) => quadrado(p, i === 0 ? '#fff' : '#00ffff', i === 0 ? 20 : 10));
+    ctx.shadowBlur = 0;
+
+    if (pausado) {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#fff';
+        ctx.font = "14px 'Press Start 2P'";
+        ctx.textAlign = 'center';
+        ctx.fillText('PAUSADO', canvas.width / 2, canvas.height / 2);
     }
 }
 
 function updateHUD() {
-    if (scoreEl) scoreEl.innerText = score.toString().padStart(4, "0");
-    if (levelEl) levelEl.innerText = level;
+    if (scoreEl) scoreEl.textContent = String(score).padStart(4, '0');
+    if (levelEl) levelEl.textContent = level;
 }
 
-/* ==========================================================================
-   CONTROLES E RESPONSIVIDADE
-========================================================================== */
-function changeDir(dir) {
-    if (!loop) return;
-    if (dir === "up" && dy === 0) { dx = 0; dy = -SIZE; }
-    if (dir === "down" && dy === 0) { dx = 0; dy = SIZE; }
-    if (dir === "left" && dx === 0) { dx = -SIZE; dy = 0; }
-    if (dir === "right" && dx === 0) { dx = SIZE; dy = 0; }
+/* --- Controles --- */
+function mudarDirecao(nome) {
+    if (!rodando || pausado) return;
+    fila = enfileirar(fila, direcao, DIRECOES[nome]);
 }
 
 window.handleMove = (e, dir) => {
     if (e && e.cancelable) e.preventDefault();
-    changeDir(dir);
+    mudarDirecao(dir);
 };
 
-document.addEventListener("keydown", e => {
+const TECLAS = {
+    arrowup: 'up', w: 'up', arrowdown: 'down', s: 'down',
+    arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right',
+};
+
+document.addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
-    if (k === "arrowup" || k === "w") changeDir("up");
-    if (k === "arrowdown" || k === "s") changeDir("down");
-    if (k === "arrowleft" || k === "a") changeDir("left");
-    if (k === "arrowright" || k === "d") changeDir("right");
+    if (k === 'p' || k === 'escape') {
+        if (rodando) { e.preventDefault(); window.togglePause(); }
+        return;
+    }
+    if (TECLAS[k] && rodando) {
+        e.preventDefault(); // setas não rolam a página durante o jogo
+        mudarDirecao(TECLAS[k]);
+    }
 });
 
+/* --- Tamanho: a grade é sempre 20×20; a tela só muda a escala --- */
 function resizeCanvas() {
-    const size = Math.min(window.innerWidth * 0.90, 400);
-    canvas.width = Math.floor(size / SIZE) * SIZE;
-    canvas.height = Math.floor(size / SIZE) * SIZE;
+    celula = Math.max(8, Math.floor(Math.min(window.innerWidth * 0.9, 400) / GRADE));
+    canvas.width = canvas.height = celula * GRADE;
+    desenhar();
 }
-window.addEventListener("resize", resizeCanvas);
+window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+updateHUD();
