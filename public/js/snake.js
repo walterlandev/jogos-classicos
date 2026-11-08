@@ -1,19 +1,25 @@
 /* ==========================================================================
    Snake — tela, laço e controles.
-   A lógica (passo, fila de comandos, níveis, bônus) mora em logica/cobra.js.
+   Regras (passo, fila de comandos, níveis, bônus) em logica/cobra.js;
+   cores sempre da paleta do tema atual (temas.js).
 ========================================================================== */
 import {
     GRADE, DIRECOES, enfileirar, passo, celulaLivre,
     nivelPorPontos, intervaloDoNivel, marcoDeBonus,
 } from './logica/cobra.js';
 import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
+import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
+import { ligarToque } from './controles.js';
 
 const canvas = document.getElementById('snakeGame');
 const ctx = canvas.getContext('2d');
-const area = canvas.parentElement;
-const scoreEl = document.getElementById('snakeScore');
-const levelEl = document.getElementById('snakeLevel');
-const btnStart = document.querySelector('.btn-start');
+const CELULA = canvas.width / GRADE; // 400 / 20 = 20 px; o CSS escala sem distorcer
+const pontosEl = document.getElementById('pontos');
+const nivelEl = document.getElementById('nivel');
+const camadaInicio = document.getElementById('camadaInicio');
+const camadaPausa = document.getElementById('camadaPausa');
+const tituloInicio = camadaInicio.querySelector('.camada-titulo');
+const botaoJogar = document.getElementById('botaoJogar');
 
 const DURACAO_BONUS_MS = 10000;
 
@@ -26,13 +32,13 @@ let level = 1;
 let intervalo = intervaloDoNivel(1);
 let ultimoMarco = 0;
 let bonusRestanteMs = 0;
+let piscar = false;
 let loop = null;
 let rodando = false;
 let pausado = false;
-let celula = 20; // pixels por célula; só muda a escala, nunca a grade
 
 /* --- Partida --- */
-window.startGame = () => {
+function startGame() {
     if (rodando) return;
     cobra = [{ x: 5, y: 5 }, { x: 4, y: 5 }, { x: 3, y: 5 }];
     direcao = DIRECOES.right;
@@ -45,41 +51,43 @@ window.startGame = () => {
     comida = celulaLivre(cobra, GRADE);
     rodando = true;
     pausado = false;
-    if (btnStart) btnStart.style.display = 'none';
-    esconderFimDeJogo(area);
+    camadaInicio.hidden = true;
+    camadaPausa.hidden = true;
+    esconderFimDeJogo(camadaInicio);
     updateHUD();
     agendar();
     desenhar();
-};
+}
 
 function agendar() {
     clearInterval(loop);
     loop = setInterval(tique, intervalo);
 }
 
-window.togglePause = () => {
+function togglePause() {
     if (!rodando) return;
     pausado = !pausado;
+    camadaPausa.hidden = !pausado;
     if (pausado) {
         clearInterval(loop);
-        desenhar();
+        camadaPausa.querySelector('button').focus();
     } else {
         agendar();
     }
-};
+}
 
 async function gameOver() {
     rodando = false;
     clearInterval(loop);
     loop = null;
-    if (btnStart) {
-        btnStart.textContent = 'TENTAR NOVAMENTE';
-        btnStart.style.display = 'block';
-    }
     const pontos = score;
-    mostrarFimDeJogo(area, { titulo: 'FIM DE JOGO', pontos, recordeNovo: false });
+    tituloInicio.textContent = 'Fim de jogo';
+    botaoJogar.textContent = 'Jogar de novo';
+    mostrarFimDeJogo(camadaInicio, { pontos, recordeNovo: false });
+    camadaInicio.hidden = false;
+    botaoJogar.focus();
     const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(pontos, 'snake') : false;
-    if (recordeNovo && !rodando) mostrarFimDeJogo(area, { titulo: 'FIM DE JOGO', pontos, recordeNovo });
+    if (recordeNovo && !rodando) mostrarFimDeJogo(camadaInicio, { pontos, recordeNovo });
 }
 
 /* --- Tique do jogo --- */
@@ -120,79 +128,66 @@ function tique() {
         // O tempo do bônus corre por tique: a pausa congela o bônus junto.
         bonusRestanteMs = Math.max(0, bonusRestanteMs - intervalo);
     }
+    piscar = !piscar;
     desenhar();
 }
 
 /* --- Desenho --- */
-function quadrado(p, cor, brilho) {
+function quadrado(p, cor) {
     ctx.fillStyle = cor;
-    ctx.shadowColor = cor;
-    ctx.shadowBlur = brilho;
-    ctx.fillRect(p.x * celula, p.y * celula, celula - 1, celula - 1);
+    ctx.fillRect(p.x * CELULA + 1, p.y * CELULA + 1, CELULA - 2, CELULA - 2);
 }
 
 function desenhar() {
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#000';
+    const pal = paleta();
+    ctx.fillStyle = pal.fundo;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (pal.vazio) {
+        for (let y = 0; y < GRADE; y++)
+            for (let x = 0; x < GRADE; x++) quadrado({ x, y }, pal.vazio);
+    }
     if (!cobra.length) return;
-
-    if (comida) {
-        if (bonusRestanteMs > 0) quadrado(comida, `hsl(${(Date.now() / 2) % 360}, 100%, 50%)`, 20);
-        else quadrado(comida, '#ff00ff', 10);
-    }
-    cobra.forEach((p, i) => quadrado(p, i === 0 ? '#fff' : '#00ffff', i === 0 ? 20 : 10));
-    ctx.shadowBlur = 0;
-
-    if (pausado) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#fff';
-        ctx.font = "14px 'Press Start 2P'";
-        ctx.textAlign = 'center';
-        ctx.fillText('PAUSADO', canvas.width / 2, canvas.height / 2);
-    }
+    // Comida bônus pisca entre as duas cores de bônus do tema.
+    if (comida) quadrado(comida, bonusRestanteMs > 0 ? pal.bonus[piscar ? 1 : 0] : pal.comida);
+    cobra.forEach((p, i) => quadrado(p, i === 0 ? pal.cabeca : pal.cobra));
 }
 
 function updateHUD() {
-    if (scoreEl) scoreEl.textContent = String(score).padStart(4, '0');
-    if (levelEl) levelEl.textContent = level;
+    pontosEl.textContent = score;
+    nivelEl.textContent = level;
 }
 
 /* --- Controles --- */
-function mudarDirecao(nome) {
+function acao(nome) {
+    if (nome === 'pausa') return togglePause();
     if (!rodando || pausado) return;
     fila = enfileirar(fila, direcao, DIRECOES[nome]);
 }
 
-window.handleMove = (e, dir) => {
-    if (e && e.cancelable) e.preventDefault();
-    mudarDirecao(dir);
-};
+botaoJogar.addEventListener('click', startGame);
+document.querySelectorAll('[data-acao]').forEach(botao => {
+    const nome = botao.dataset.acao;
+    if (botao.classList.contains('controle')) ligarToque(botao, () => acao(nome));
+    else botao.addEventListener('click', () => acao(nome));
+});
 
 const TECLAS = {
     arrowup: 'up', w: 'up', arrowdown: 'down', s: 'down',
     arrowleft: 'left', a: 'left', arrowright: 'right', d: 'right',
 };
-
 document.addEventListener('keydown', e => {
     const k = e.key.toLowerCase();
     if (k === 'p' || k === 'escape') {
-        if (rodando) { e.preventDefault(); window.togglePause(); }
+        if (rodando) { e.preventDefault(); togglePause(); }
         return;
     }
     if (TECLAS[k] && rodando) {
         e.preventDefault(); // setas não rolam a página durante o jogo
-        mudarDirecao(TECLAS[k]);
+        acao(TECLAS[k]);
     }
 });
 
-/* --- Tamanho: a grade é sempre 20×20; a tela só muda a escala --- */
-function resizeCanvas() {
-    celula = Math.max(8, Math.floor(Math.min(window.innerWidth * 0.9, 400) / GRADE));
-    canvas.width = canvas.height = celula * GRADE;
-    desenhar();
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+ligarBotaoTema(document.getElementById('botaoTema'));
+aoMudarTema(desenhar);
+desenhar();
 updateHUD();
