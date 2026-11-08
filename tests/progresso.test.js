@@ -60,3 +60,18 @@ test('mesclar fica com o melhor de cada lado', () => {
     });
     assert.deepEqual(mesclar(novoProgresso(), null), novoProgresso());
 });
+
+test('XP adulterado não trava: nível por fórmula e XP limitado', () => {
+    const t0 = Date.now();
+    for (const xp of [Infinity, 1e300, -5, NaN, '9999999999999']) {
+        const r = nivelDaConta(xp);
+        assert.ok(Number.isInteger(r.nivel) && r.nivel >= 1 && r.nivel < 5000, `xp ${xp} deu ${r.nivel}`);
+    }
+    assert.ok(Date.now() - t0 < 50, 'demorou demais');
+    // a fórmula bate com a definição em toda a faixa normal
+    for (let xp = 0; xp <= 200000; xp += 37) {
+        const { nivel } = nivelDaConta(xp);
+        assert.ok(xpTotalParaNivel(nivel) <= xp && xpTotalParaNivel(nivel + 1) > xp, `xp ${xp}`);
+    }
+    assert.equal(mesclar(novoProgresso(), { xp: 1e300 }).xp, 1e9);
+});

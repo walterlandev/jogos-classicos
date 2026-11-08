@@ -12,9 +12,19 @@ export function xpDaPartida(jogo, r = {}) {
 // XP total para chegar ao nível n (2 = 100, 10 = 4.500, 20 = 19.000).
 export const xpTotalParaNivel = (n) => 50 * (n - 1) * n;
 
-export function nivelDaConta(xp) {
-    let nivel = 1;
-    while (xpTotalParaNivel(nivel + 1) <= xp) nivel++;
+// Teto de XP: valor adulterado no banco (1e300, Infinity) não pode travar ninguém.
+export const XP_MAXIMO = 1e9;
+const xpSeguro = (xp) => {
+    const n = Number(xp);
+    return Number.isFinite(n) ? Math.min(XP_MAXIMO, Math.max(0, Math.floor(n))) : 0;
+};
+
+// Fórmula fechada (sem laço): maior n com 50·(n−1)·n ≤ xp.
+export function nivelDaConta(xpBruto) {
+    const xp = xpSeguro(xpBruto);
+    let nivel = Math.max(1, Math.floor((1 + Math.sqrt(1 + 0.08 * xp)) / 2));
+    if (xpTotalParaNivel(nivel) > xp) nivel--;           // corrige arredondamento
+    else if (xpTotalParaNivel(nivel + 1) <= xp) nivel++;
     return {
         nivel,
         xpNoNivel: xp - xpTotalParaNivel(nivel),
@@ -72,7 +82,7 @@ export function mesclar(a, b) {
     const lista = (v) => (Array.isArray(v) ? v.filter(i => typeof i === 'string') : []);
     const eb = b.est || {};
     return {
-        xp: Math.max(num(x.xp), num(b.xp)),
+        xp: Math.min(XP_MAXIMO, Math.max(num(x.xp), num(b.xp))),
         conquistas: [...new Set([...lista(x.conquistas), ...lista(b.conquistas)])].sort(),
         est: {
             partidas: Math.max(num(x.est.partidas), num(eb.partidas)),
