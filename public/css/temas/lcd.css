@@ -3,9 +3,9 @@
    botões redondos laranja. Dentro dos jogos tudo é monocromático. */
 [data-tema="lcd"] {
     --esquema: dark;
-    --fonte-titulo: 'Pixelify Sans', sans-serif;
+    --fonte-titulo: 'Silkscreen', sans-serif;
     --fonte-texto: 'IBM Plex Sans Condensed', sans-serif;
-    --fonte-numero: 'Pixelify Sans', sans-serif;
+    --fonte-numero: 'Silkscreen', sans-serif;
     --peso-titulo: 700;
 
     --fundo: #2f3a4a;
@@ -88,3 +88,12 @@
 /* A cruz de direção é preta e quadrada; só A/B e ações são laranja e redondos. */
 [data-tema="lcd"] .cruz .controle { --controle-fundo: #1c232d; --controle-texto: #a8b59a; --controle-raio: 6px; --controle-sombra: 0 3px 0 #11161c; }
 [data-tema="lcd"] .pagina-jogo .jogo { background: #2f3a4a; }
+
+/* Dentro dos painéis (fundo LCD claro) os botões secundários são contornados. */
+[data-tema="lcd"] .painel .botao:not(.botao-primario),
+[data-tema="lcd"] dialog .botao:not(.botao-primario) {
+    --botao-fundo: transparent;
+    --botao-fundo-hover: rgba(38, 48, 31, 0.1);
+    --botao-borda: 2px solid #26301f;
+}
+[data-tema="lcd"] .aba[aria-selected="true"] { border-color: transparent; }

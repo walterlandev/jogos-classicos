@@ -44,7 +44,7 @@ Caixa e manual de cartucho dos anos 90: impresso, chapado, gráfico.
 Minigame de bolso: corpo grafite, tela de cristal líquido, botões laranja.
 - Cores: grafite `#2f3a4a`/`#3b4759`, moldura `#1c232d`, LCD `#a8b59a`,
   segmento `#26301f`, botão `#e8742c`.
-- Fontes: **Pixelify Sans** (títulos, números), **IBM Plex Sans
+- Fontes: **Silkscreen** (títulos, números; a Pixelify foi descartada porque o "C" parece "O" e o "B" parece "8"), **IBM Plex Sans
   Condensed** (texto).
 - Acabamento: tela LCD com moldura preta grossa; jogos monocromáticos;
   cruz de direção preta, botões de ação redondos laranja.

@@ -192,6 +192,23 @@ a { color: inherit; text-underline-offset: 0.22em; }
 .rodape { padding: 24px 20px 32px; text-align: center; font-size: 15px; color: var(--texto-suave); }
 .rodape p { margin: 0; }
 
+/* Menu no celular: máquinas compactas (miniatura à esquerda) e topo enxuto. */
+@media (max-width: 600px) {
+    .menu { padding-top: 24px; gap: 32px; }
+    .topo .botao { min-height: 40px; padding: 6px 12px; font-size: 14px; }
+    .maquinas { gap: 16px; }
+    .maquina {
+        display: grid; column-gap: 14px;
+        grid-template-columns: 112px minmax(0, 1fr);
+        grid-template-areas: "nome nome" "mini recorde" "mini jogar";
+        grid-template-rows: auto auto 1fr;
+    }
+    .maquina-nome { grid-area: nome; }
+    .miniatura { grid-area: mini; margin: 12px 0 0; padding: 6px; gap: 2px; align-self: start; }
+    .maquina-recorde { grid-area: recorde; margin: 12px 0 8px; }
+    .maquina .botao-primario { grid-area: jogar; align-self: end; }
+}
+
 /* --- Diálogos e formulários --- */
 dialog {
     --botao-texto: var(--painel-texto);

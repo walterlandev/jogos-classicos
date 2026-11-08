@@ -1,136 +1,153 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-tema="fliperama">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Jogos Clássicos</title>
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <meta name="description" content="Blockix, Snake e Breakout no navegador, com recorde e ranking.">
+    <script>try{var t=localStorage.getItem('tema');if(/^[a-z_]+$/.test(t))document.documentElement.dataset.tema=t}catch(e){}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Barlow+Semi+Condensed:wght@500;600;700&family=Rubik+Mono+One&family=Rubik:wght@400;500;700&family=Silkscreen:wght@400;700&family=IBM+Plex+Sans+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/temas/fliperama.css">
+    <link rel="stylesheet" href="css/temas/cartucho.css">
+    <link rel="stylesheet" href="css/temas/lcd.css">
 </head>
 <body>
-
-    <header class="topbar">
-        <h1 class="logo">Jogos Clássicos</h1>
-        
-        <nav class="nav-area">
-            <div id="botoesDeslogado">
-                <button class="btn-neon" onclick="openLogin()">Entrar</button>
-                <button class="btn-neon" onclick="openRegister()">Criar conta</button>
+    <header class="topo">
+        <a class="marca" href="./">Jogos Clássicos</a>
+        <nav class="conta" aria-label="Conta">
+            <div id="botoesDeslogado" class="conta">
+                <button class="botao" type="button" data-abrir="loginModal">Entrar</button>
+                <button class="botao botao-primario" type="button" data-abrir="registerModal">Criar conta</button>
             </div>
-
-            <div id="statusLogado" style="display: none; align-items: center; gap: 15px;"> 
-                <span class="welcome-text">Olá, <strong id="userName">...</strong></span>
-                <button onclick="logout()" class="btn-neon btn-danger">Sair</button>
+            <div id="statusLogado" class="conta" hidden>
+                <span class="ola">Olá, <span id="userName">jogador</span></span>
+                <button class="botao" type="button" id="botaoSair">Sair</button>
             </div>
         </nav>
     </header>
 
-    <main>
-        <section class="hero">
-            <h2 class="page-title">Reviva os Clássicos</h2>
-            
-            <div class="game-card neon-box">
-                <div class="game-left">
-                    <a href="tetris.html" class="game-thumb">
-                        <img src="assets/jogo.png" alt="Cena do jogo Tetris">
-                        <div class="play-banner">JOGAR TETRIS</div>
-                    </a>
-                </div>
-
-                <div class="game-right">
-                    <h3 class="ranking-title">🏆 Top 10 TETRIS</h3>
-                    <table class="ranking-table">
-                        <thead>
-                            <tr>
-                                <th>POS</th>
-                                <th>JOGADOR</th>
-                                <th>PONTOS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="rankingTetris">
-                            <tr><td colspan="3">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="game-card neon-box">
-                <div class="game-left">
-                    <a href="snake.html" class="game-thumb">
-                        <img src="assets/Snake.png" alt="Cena do jogo Snake">
-                        <div class="play-banner">JOGAR SNAKE</div>
-                    </a>
-                </div>
-
-                <div class="game-right">
-                    <h3 class="ranking-title">🏆 Top 10 SNAKE</h3>
-                    <table class="ranking-table">
-                        <thead>
-                            <tr>
-                                <th>POS</th>
-                                <th>JOGADOR</th>
-                                <th>PONTOS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="rankingSnake">
-                            <tr><td colspan="3">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-             <div class="game-card neon-box">
-                <div class="game-left">
-                    <a href="Breakout.html" class="game-thumb">
-                        <img src="assets/Brekout.png" alt="Cena do jogo Breakout">
-                        <div class="play-banner">JOGAR Breakout</div>
-                    </a>
-                </div>
-
-                <div class="game-right">
-                    <h3 class="ranking-title">🏆 Top 10 Breakout</h3>
-                    <table class="ranking-table">
-                        <thead>
-                            <tr>
-                                <th>POS</th>
-                                <th>JOGADOR</th>
-                                <th>PONTOS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="rankingBreakout">
-                            <tr><td colspan="3">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <main class="menu">
+        <section aria-labelledby="tituloJogos">
+            <h1 class="titulo-secao" id="tituloJogos">Escolha um jogo</h1>
+            <ul class="maquinas">
+                <li>
+                    <article class="maquina" data-jogo="blockix">
+                        <h2 class="maquina-nome">Blockix</h2>
+                        <div class="miniatura" aria-hidden="true">
+                            <i></i><i></i><i></i><i class="p2"></i><i></i><i></i><i></i><i></i>
+                            <i></i><i></i><i class="p2"></i><i class="p2"></i><i class="p2"></i><i></i><i></i><i></i>
+                            <i class="p1"></i><i></i><i></i><i></i><i class="p4"></i><i class="p4"></i><i></i><i class="p7"></i>
+                            <i class="p1"></i><i class="p3"></i><i class="p3"></i><i class="p4"></i><i class="p4"></i><i class="p5"></i><i class="p5"></i><i class="p7"></i>
+                        </div>
+                        <p class="maquina-recorde"><span>Seu recorde</span><strong data-recorde="blockix">—</strong></p>
+                        <a class="botao botao-primario" href="blockix.html">Jogar Blockix</a>
+                    </article>
+                </li>
+                <li>
+                    <article class="maquina" data-jogo="snake">
+                        <h2 class="maquina-nome">Snake</h2>
+                        <div class="miniatura" aria-hidden="true">
+                            <i></i><i></i><i></i><i></i><i></i><i></i><i class="cm"></i><i></i>
+                            <i class="cb"></i><i class="cb"></i><i class="cb"></i><i></i><i></i><i></i><i></i><i></i>
+                            <i></i><i></i><i class="cb"></i><i></i><i></i><i></i><i></i><i></i>
+                            <i></i><i></i><i class="cb"></i><i class="cb"></i><i class="cc"></i><i></i><i></i><i></i>
+                        </div>
+                        <p class="maquina-recorde"><span>Seu recorde</span><strong data-recorde="snake">—</strong></p>
+                        <a class="botao botao-primario" href="snake.html">Jogar Snake</a>
+                    </article>
+                </li>
+                <li>
+                    <article class="maquina" data-jogo="breakout">
+                        <h2 class="maquina-nome">Breakout</h2>
+                        <div class="miniatura" aria-hidden="true">
+                            <i class="t1"></i><i class="t1"></i><i class="t1"></i><i></i><i class="t1"></i><i class="t1"></i><i class="t1"></i><i class="t1"></i>
+                            <i class="t2"></i><i></i><i class="t2"></i><i class="t2"></i><i class="t2"></i><i></i><i class="t2"></i><i class="t2"></i>
+                            <i></i><i></i><i></i><i></i><i></i><i class="bl"></i><i></i><i></i>
+                            <i></i><i></i><i></i><i class="rq"></i><i class="rq"></i><i class="rq"></i><i></i><i></i>
+                        </div>
+                        <p class="maquina-recorde"><span>Seu recorde</span><strong data-recorde="breakout">—</strong></p>
+                        <a class="botao botao-primario" href="breakout.html">Jogar Breakout</a>
+                    </article>
+                </li>
+            </ul>
         </section>
+
+        <div class="menu-colunas">
+            <section class="painel" aria-labelledby="tituloRanking">
+                <h2 class="titulo-secao" id="tituloRanking">Ranking</h2>
+                <div class="abas" role="tablist" aria-label="Ranking por jogo">
+                    <button class="botao aba" type="button" role="tab" id="abaBlockix" aria-controls="painelBlockix" aria-selected="true">Blockix</button>
+                    <button class="botao aba" type="button" role="tab" id="abaSnake" aria-controls="painelSnake" aria-selected="false" tabindex="-1">Snake</button>
+                    <button class="botao aba" type="button" role="tab" id="abaBreakout" aria-controls="painelBreakout" aria-selected="false" tabindex="-1">Breakout</button>
+                </div>
+                <div role="tabpanel" id="painelBlockix" aria-labelledby="abaBlockix">
+                    <table class="tabela-ranking">
+                        <thead><tr><th scope="col">Pos.</th><th scope="col">Jogador</th><th scope="col">Pontos</th></tr></thead>
+                        <tbody id="rankingBlockix"><tr><td colspan="3">Carregando…</td></tr></tbody>
+                    </table>
+                </div>
+                <div role="tabpanel" id="painelSnake" aria-labelledby="abaSnake" hidden>
+                    <table class="tabela-ranking">
+                        <thead><tr><th scope="col">Pos.</th><th scope="col">Jogador</th><th scope="col">Pontos</th></tr></thead>
+                        <tbody id="rankingSnake"><tr><td colspan="3">Carregando…</td></tr></tbody>
+                    </table>
+                </div>
+                <div role="tabpanel" id="painelBreakout" aria-labelledby="abaBreakout" hidden>
+                    <table class="tabela-ranking">
+                        <thead><tr><th scope="col">Pos.</th><th scope="col">Jogador</th><th scope="col">Pontos</th></tr></thead>
+                        <tbody id="rankingBreakout"><tr><td colspan="3">Carregando…</td></tr></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="painel" aria-labelledby="tituloTema">
+                <h2 class="titulo-secao" id="tituloTema">Aparência</h2>
+                <div id="seletorTema"></div>
+            </section>
+        </div>
     </main>
 
-    <dialog id="loginModal" class="modal-neon">
-        <h2>Entrar</h2>
-        <form id="loginForm">
-            <input type="email" id="loginEmail" placeholder="E-mail" required>
-            <input type="password" id="loginSenha" placeholder="Senha" required>
-            <button type="submit" class="btn-neon">Confirmar</button>
-            <button type="button" class="btn-neon btn-danger" onclick="document.getElementById('loginModal').close()">Sair</button>
-        </form>
-    </dialog>
-
-    <dialog id="registerModal" class="modal-neon">
-        <h2>Criar conta</h2>
-        <form id="registerForm">
-            <input type="text" id="regNickname" placeholder="Apelido" required>
-            <input type="email" id="regEmail" placeholder="E-mail" required>
-            <input type="password" id="regSenha" placeholder="Senha" required>
-            <button type="submit" class="btn-neon">Cadastrar</button>
-            <button type="button" class="btn-neon btn-danger" onclick="document.getElementById('registerModal').close()">Cancelar</button>
-        </form>
-    </dialog>
-
-    <script type="module" src="js/auth.js"></script>
-
-    <footer class="footer">
-        <p>© 2026 - jogos classicos WAS.</p>
+    <footer class="rodape">
+        <p>© 2026 Jogos Clássicos WAS</p>
     </footer>
-</body>
 
+    <dialog id="loginModal" aria-labelledby="tituloLogin">
+        <h2 id="tituloLogin">Entrar</h2>
+        <form id="loginForm" class="formulario" novalidate>
+            <label class="campo-form"><span>E-mail</span>
+                <input type="email" id="loginEmail" autocomplete="email" required></label>
+            <label class="campo-form"><span>Senha</span>
+                <input type="password" id="loginSenha" autocomplete="current-password" required></label>
+            <p class="mensagem" role="alert" aria-live="assertive"></p>
+            <div class="acoes-form">
+                <button type="button" class="botao" data-fechar>Cancelar</button>
+                <button type="submit" class="botao botao-primario">Entrar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="registerModal" aria-labelledby="tituloCadastro">
+        <h2 id="tituloCadastro">Criar conta</h2>
+        <form id="registerForm" class="formulario" novalidate>
+            <label class="campo-form"><span>Apelido no ranking</span>
+                <input type="text" id="regNickname" autocomplete="nickname" maxlength="20" required></label>
+            <label class="campo-form"><span>E-mail</span>
+                <input type="email" id="regEmail" autocomplete="email" required></label>
+            <label class="campo-form"><span>Senha (mínimo 6 caracteres)</span>
+                <input type="password" id="regSenha" autocomplete="new-password" minlength="6" required></label>
+            <p class="mensagem" role="alert" aria-live="assertive"></p>
+            <div class="acoes-form">
+                <button type="button" class="botao" data-fechar>Cancelar</button>
+                <button type="submit" class="botao botao-primario">Criar conta</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script type="module" src="js/temas.js"></script>
+    <script type="module" src="js/menu.js"></script>
+    <script type="module" src="js/auth.js"></script>
+</body>
 </html>

@@ -1,94 +1,103 @@
+// Firebase: conta, perfil (apelido, recordes, tema), recorde e ranking.
+// Todo dado do jogador entra na página por textContent, nunca como HTML.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    createUserWithEmailAndPassword, 
-    onAuthStateChanged, 
-    signOut, 
-    sendEmailVerification 
+import {
+    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    onAuthStateChanged, signOut, sendEmailVerification,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    setDoc, 
-    updateDoc, 
-    query, 
-    collection, 
-    orderBy, 
-    limit, 
-    getDocs 
+import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, query, collection, orderBy, limit, getDocs,
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { aplicarTema, aoMudarTema, definirItensLiberados } from './temas.js';
+import { podeUsar } from './logica/temas.js';
 
-// --- CONFIGURAÇÃO ---
+// Config web do Firebase: não é segredo (vai ao navegador de todo visitante).
 const firebaseConfig = {
-  apiKey: "AIzaSyAmzWuaasssjZeN1wRYFxgDDjEJqNws7eU",
-  authDomain: "jogos-classicos.firebaseapp.com",
-  projectId: "jogos-classicos",
-  storageBucket: "jogos-classicos.firebasestorage.app",
-  messagingSenderId: "179789313146",
-  appId: "1:179789313146:web:4911debffc5a63a23977c3",
-  measurementId: "G-LMKWJP6RY0"
+    apiKey: "AIzaSyAmzWuaasssjZeN1wRYFxgDDjEJqNws7eU",
+    authDomain: "jogos-classicos.firebaseapp.com",
+    projectId: "jogos-classicos",
+    storageBucket: "jogos-classicos.firebasestorage.app",
+    messagingSenderId: "179789313146",
+    appId: "1:179789313146:web:4911debffc5a63a23977c3",
+    measurementId: "G-LMKWJP6RY0",
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// --- MONITORAMENTO DO USUÁRIO ---
-onAuthStateChanged(auth, async (user) => {
-    const statusLogado = document.getElementById('statusLogado');
-    const botoesDeslogado = document.getElementById('botoesDeslogado');
-    const userNameEl = document.getElementById('userName');
-    const userScoreEl = document.getElementById('userScore');
+// O Blockix guarda no campo antigo do "Tetris" (ranking preservado).
+const CAMPOS_RECORDE = {
+    blockix: 'recorde_tetris', tetris: 'recorde_tetris',
+    snake: 'recorde_snake', breakout: 'recorde_breakout',
+};
+const jogoDaPagina = document.body.dataset.jogo;
 
+const el = (id) => document.getElementById(id);
+const texto = (node, valor) => { if (node) node.textContent = valor; };
+
+function mostrarRecordes(dados) {
+    document.querySelectorAll('[data-recorde]').forEach(n => {
+        texto(n, Number(dados?.[CAMPOS_RECORDE[n.dataset.recorde]]) || 0);
+    });
+    if (jogoDaPagina) texto(el('userScore'), Number(dados?.[CAMPOS_RECORDE[jogoDaPagina]]) || 0);
+}
+
+// --- Estado da conta ---
+onAuthStateChanged(auth, async (user) => {
+    const logado = el('statusLogado');
+    const deslogado = el('botoesDeslogado');
+    let dados = null;
     if (user) {
-        // Se o usuário está logado, busca os dados dele
-        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        if (userDoc.exists()) {
-            const dados = userDoc.data();
-            if (userNameEl) userNameEl.textContent = dados.nome || "Jogador";
-            
-            // Lógica para mostrar o recorde certo dependendo da página
-            if (userScoreEl) {
-                const url = window.location.href.toLowerCase();
-                if (url.includes("snake")) {
-                    userScoreEl.textContent = dados.recorde_snake || 0;
-                } else if (url.includes("breakout")) {
-                    userScoreEl.textContent = dados.recorde_breakout || 0;
-                } else {
-                    // Assume Tetris como padrão ou index
-                    userScoreEl.textContent = dados.recorde_tetris || 0;
-                }
-            }
-            
-            if (statusLogado) statusLogado.style.display = 'flex';
-            if (botoesDeslogado) botoesDeslogado.style.display = 'none';
+        try {
+            const snap = await getDoc(doc(db, 'usuarios', user.uid));
+            if (snap.exists()) dados = snap.data();
+        } catch (e) {
+            console.error('Erro ao ler o perfil:', e);
+        }
+    }
+    if (dados) {
+        texto(el('userName'), String(dados.nome || 'jogador'));
+        mostrarRecordes(dados);
+        definirItensLiberados(dados.itens_liberados);
+        if (dados.tema && podeUsar(dados.tema, dados.itens_liberados)) {
+            aplicarTema(dados.tema, { origem: 'perfil' });
         }
     } else {
-        // Se não está logado
-        if (statusLogado) statusLogado.style.display = 'none';
-        if (botoesDeslogado) botoesDeslogado.style.display = 'flex';
+        document.querySelectorAll('[data-recorde]').forEach(n => texto(n, '—'));
+        definirItensLiberados([]);
+    }
+    if (logado) logado.hidden = !dados;
+    if (deslogado) deslogado.hidden = !!dados;
+});
+
+// Tema escolhido pelo jogador vai para o perfil (vale em qualquer aparelho).
+aoMudarTema(async (id, origem) => {
+    const user = auth.currentUser;
+    if (origem !== 'usuario' || !user) return;
+    try {
+        await updateDoc(doc(db, 'usuarios', user.uid), { tema: id });
+    } catch (e) {
+        console.error('Erro ao salvar o tema:', e);
     }
 });
 
-// --- SALVAR RECORDES (UNIFICADO) ---
-// Devolve true quando a pontuação virou recorde novo. Não recarrega a página.
-const CAMPOS_RECORDE = { tetris: 'recorde_tetris', snake: 'recorde_snake', breakout: 'recorde_breakout' };
+el('botaoSair')?.addEventListener('click', () => signOut(auth));
 
-window.salvarRecordeDB = async (pontosFeitos, tipoJogo = 'tetris') => {
+// --- Recorde ---
+// Devolve true quando a pontuação virou recorde novo. Não recarrega a página.
+window.salvarRecordeDB = async (pontosFeitos, tipoJogo = jogoDaPagina) => {
     const user = auth.currentUser;
     const campo = CAMPOS_RECORDE[tipoJogo];
     if (!user || !campo || !Number.isFinite(pontosFeitos)) return false;
     try {
-        const userRef = doc(db, 'usuarios', user.uid);
-        const snap = await getDoc(userRef);
+        const ref = doc(db, 'usuarios', user.uid);
+        const snap = await getDoc(ref);
         if (!snap.exists()) return false;
         const recordeAtual = Number(snap.data()[campo]) || 0;
         if (pontosFeitos <= recordeAtual) return false;
-        await updateDoc(userRef, { [campo]: pontosFeitos, data_recorde: new Date() });
-        const el = document.getElementById('userScore');
-        if (el) el.textContent = pontosFeitos;
+        await updateDoc(ref, { [campo]: pontosFeitos, data_recorde: new Date() });
+        texto(el('userScore'), pontosFeitos);
         return true;
     } catch (e) {
         console.error('Erro ao salvar recorde:', e);
@@ -96,98 +105,111 @@ window.salvarRecordeDB = async (pontosFeitos, tipoJogo = 'tetris') => {
     }
 };
 
-// --- INTERFACE (Modais) ---
-window.openLogin = () => document.getElementById('loginModal')?.showModal();
-window.openRegister = () => document.getElementById('registerModal')?.showModal();
-window.logout = () => signOut(auth).then(() => window.location.href = "index.html");
+// --- Formulários (mensagens dentro do diálogo, sem alert) ---
+const ERROS = {
+    'auth/email-already-in-use': 'Já existe uma conta com este e-mail. Use "Entrar".',
+    'auth/weak-password': 'A senha precisa ter pelo menos 6 caracteres.',
+    'auth/invalid-email': 'Este e-mail não parece válido. Confira e tente de novo.',
+    'auth/invalid-credential': 'E-mail ou senha incorretos.',
+    'auth/wrong-password': 'E-mail ou senha incorretos.',
+    'auth/user-not-found': 'E-mail ou senha incorretos.',
+    'auth/too-many-requests': 'Muitas tentativas. Espere alguns minutos e tente de novo.',
+    'auth/network-request-failed': 'Sem conexão com o servidor. Verifique a internet.',
+};
+const mensagemDeErro = (e) => ERROS[e?.code] || 'Não deu certo agora. Tente de novo em instantes.';
 
-// --- CADASTRO ---
-const registerForm = document.getElementById('registerForm');
-if (registerForm) {
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const nick = document.getElementById('regNickname').value;
-        const email = document.getElementById('regEmail').value;
-        const senha = document.getElementById('regSenha').value;
-
-        try {
-            const userCred = await createUserWithEmailAndPassword(auth, email, senha);
-            
-            // AQUI É O PULO DO GATO:
-            // Já cria o usuário com os 3 campos de jogos zerados.
-            // Assim não dá erro de "undefined" depois.
-            await setDoc(doc(db, "usuarios", userCred.user.uid), { 
-                nome: nick, 
-                email: email,
-                recorde_snake: 0, 
-                recorde_tetris: 0,
-                recorde_breakout: 0 
-            });
-            
-            await sendEmailVerification(userCred.user);
-            alert("Conta criada! Verifique seu e-mail.");
-            window.location.reload();
-        } catch (error) { alert("Erro: " + error.message); }
-    });
+function avisar(form, msg, tipo) {
+    const p = form.querySelector('.mensagem');
+    p.dataset.tipo = tipo;
+    p.textContent = msg;
 }
 
-// --- LOGIN ---
-const loginForm = document.getElementById('loginForm');
-if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const senha = document.getElementById('loginSenha').value;
-
-        try {
-            const userCred = await signInWithEmailAndPassword(auth, email, senha);
-            if (userCred.user.emailVerified) {
-                window.location.reload();
-            } else { 
-                alert("Valide seu e-mail primeiro!"); 
-                await signOut(auth);
-            }
-        } catch (error) { alert("E-mail ou senha incorretos."); }
-    });
-}
-
-// --- RANKING ---
-async function carregarRanking(campoOrdenacao, idTabela) {
-    const rankingCorpo = document.getElementById(idTabela);
-    if (!rankingCorpo) return; // Se a tabela não existir na pagina, para aqui
-
+const registerForm = el('registerForm');
+registerForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nome = el('regNickname').value.trim();
+    const email = el('regEmail').value.trim();
+    const senha = el('regSenha').value;
+    if (!nome) return avisar(registerForm, 'Escolha um apelido para aparecer no ranking.', 'erro');
+    const botao = registerForm.querySelector('[type="submit"]');
+    botao.disabled = true;
     try {
-        const q = query(collection(db, "usuarios"), orderBy(campoOrdenacao, "desc"), limit(10));
-        const querySnapshot = await getDocs(q);
-        
-        const celula = (texto) => {
-            const td = document.createElement('td');
-            td.textContent = texto;
-            return td;
-        };
-        rankingCorpo.replaceChildren();
-        let posicao = 1;
+        const cred = await createUserWithEmailAndPassword(auth, email, senha);
+        await setDoc(doc(db, 'usuarios', cred.user.uid), {
+            nome, email, recorde_snake: 0, recorde_tetris: 0, recorde_breakout: 0,
+        });
+        await sendEmailVerification(cred.user);
+        await signOut(auth);
+        registerForm.reset();
+        avisar(registerForm, `Conta criada. Enviamos um link de confirmação para ${email}; confirme e depois entre.`, 'sucesso');
+    } catch (erro) {
+        avisar(registerForm, mensagemDeErro(erro), 'erro');
+    } finally {
+        botao.disabled = false;
+    }
+});
 
-        // Montado com textContent: o apelido nunca é interpretado como HTML.
-        querySnapshot.forEach((docSnap) => {
-            const dados = docSnap.data();
-            const tr = document.createElement('tr');
-            tr.append(
-                celula(`${posicao}º`),
-                celula(String(dados.nome ?? 'Jogador')),
-                celula(`${Number(dados[campoOrdenacao]) || 0} pts`)
-            );
-            rankingCorpo.append(tr);
+const loginForm = el('loginForm');
+loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = el('loginEmail').value.trim();
+    const senha = el('loginSenha').value;
+    const botao = loginForm.querySelector('[type="submit"]');
+    botao.disabled = true;
+    try {
+        const cred = await signInWithEmailAndPassword(auth, email, senha);
+        if (!cred.user.emailVerified) {
+            await signOut(auth);
+            avisar(loginForm, 'Confirme seu e-mail pelo link que enviamos e entre de novo.', 'erro');
+            return;
+        }
+        loginForm.reset();
+        loginForm.closest('dialog').close();
+    } catch (erro) {
+        avisar(loginForm, mensagemDeErro(erro), 'erro');
+    } finally {
+        botao.disabled = false;
+    }
+});
+
+// --- Ranking ---
+async function carregarRanking(campo, idTabela) {
+    const corpo = el(idTabela);
+    if (!corpo) return;
+    const linha = (...celulas) => {
+        const tr = document.createElement('tr');
+        for (const c of celulas) {
+            const td = document.createElement('td');
+            td.textContent = c;
+            tr.append(td);
+        }
+        return tr;
+    };
+    try {
+        const q = query(collection(db, 'usuarios'), orderBy(campo, 'desc'), limit(10));
+        const snap = await getDocs(q);
+        corpo.replaceChildren();
+        let posicao = 1;
+        snap.forEach(d => {
+            const dados = d.data();
+            const tr = linha(`${posicao}º`, String(dados.nome ?? 'jogador'), `${Number(dados[campo]) || 0}`);
+            if (auth.currentUser && d.id === auth.currentUser.uid) tr.classList.add('voce');
+            corpo.append(tr);
             posicao++;
         });
-    } catch (error) { 
-        console.error("Erro ranking:", error);
-        rankingCorpo.innerHTML = "<tr><td colspan='3'>Ranking indisponível</td></tr>";
+        if (posicao === 1) {
+            const vazio = linha('Ninguém jogou ainda. Seja o primeiro.');
+            vazio.firstChild.colSpan = 3;
+            corpo.append(vazio);
+        }
+    } catch (erro) {
+        console.error('Erro ranking:', erro);
+        const falha = linha('Ranking indisponível agora.');
+        falha.firstChild.colSpan = 3;
+        corpo.replaceChildren(falha);
     }
 }
 
-// --- INICIALIZAÇÃO DOS RANKINGS ---
-// Chamamos as funções para preencher as tabelas (caso existam na página)
-carregarRanking("recorde_tetris", "rankingTetris");
-carregarRanking("recorde_snake", "rankingSnake");
-carregarRanking("recorde_breakout", "rankingBreakout");
+carregarRanking('recorde_tetris', 'rankingBlockix');
+carregarRanking('recorde_snake', 'rankingSnake');
+carregarRanking('recorde_breakout', 'rankingBreakout');

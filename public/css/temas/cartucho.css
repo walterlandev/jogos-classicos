@@ -105,3 +105,9 @@
     font-size: 16px;
 }
 [data-tema="cartucho"] .placar-item dd { font-size: 20px; }
+
+@media (max-width: 600px) {
+    [data-tema="cartucho"] .miniatura { margin: 12px 0 12px 12px; border: 3px solid #1a1c22; }
+    [data-tema="cartucho"] .maquina-recorde { margin: 12px 12px 8px 0; }
+    [data-tema="cartucho"] .maquina .botao-primario { margin: 0 12px 12px 0; }
+}
