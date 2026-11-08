@@ -1,378 +1,228 @@
 /* ==========================================================================
-   1. CONFIGURAÇÕES E SELETORES
-   Pegamos os elementos do HTML para desenhar o jogo e mostrar pontos.
+   Jogo de blocos — tela, laço e controles.
+   A lógica (matriz, colisão, linhas, pontos, nível) mora em logica/blocos.js.
 ========================================================================== */
+import {
+    TIPOS, criarMatriz, criarPeca, girar, colide, fundir, varrerLinhas,
+    pontosPorLinhas, nivelPorLinhas, intervaloQueda,
+} from './logica/blocos.js';
+import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
+
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
+const frame = canvas.parentElement;
 
-// Elementos de HUD (PC e Mobile)
-// Usamos arrays ou seleção dupla para atualizar os dois ao mesmo tempo
 const scoreEls = [document.getElementById('scorePC'), document.getElementById('scoreMob')];
 const levelEls = [document.getElementById('levelPC'), document.getElementById('levelMob')];
-
-// Canvas de "Próxima Peça" (PC e Mobile)
-const nextCanvasPC = document.getElementById('upcomingPC');
-const nextCtxPC = nextCanvasPC ? nextCanvasPC.getContext('2d') : null;
-const nextCanvasMob = document.getElementById('upcomingMob');
-const nextCtxMob = nextCanvasMob ? nextCanvasMob.getContext('2d') : null;
+const nextCtxs = ['upcomingPC', 'upcomingMob']
+    .map(id => document.getElementById(id))
+    .filter(Boolean)
+    .map(c => c.getContext('2d'));
 
 const btnStartOverlay = document.getElementById('startBtnOverlay');
 const pauseOverlay = document.getElementById('pauseOverlay');
 
-// Dimensões do Jogo
 const ROWS = 20;
 const COLS = 10;
-const BLOCK_SIZE = 30; // Tamanho interno do bloco (resolução)
+const BLOCK_SIZE = 30;
 
-// Cores Neon para as peças (Índice 0 é vazio)
-const COLORS = [
-    null,
-    '#00ffff', // Cyan (I)
-    '#ff00ff', // Pink (L)
-    '#ff0000', // Red (J)
-    '#00ff00', // Green (O)
-    '#ff8800', // Orange (S)
-    '#0000ff', // Blue (Z)
-    '#ffff00'  // Yellow (T)
-];
+// Índice 0 é vazio; os demais batem com os valores das peças em logica/blocos.js.
+const COLORS = [null, '#00ffff', '#ff00ff', '#ff0000', '#00ff00', '#ff8800', '#0000ff', '#ffff00'];
 
-/* ==========================================================================
-   2. VARIÁVEIS DE ESTADO
-   Aqui guardamos tudo que muda durante o jogo.
-========================================================================== */
-let board = createMatrix(COLS, ROWS); // O tabuleiro (matriz de zeros)
-let player = { pos: {x: 0, y: 0}, matrix: null }; // O jogador (peça caindo)
-let nextPieceMatrix = null; // A próxima peça
+/* --- Estado --- */
+let board = criarMatriz(COLS, ROWS);
+const player = { pos: { x: 0, y: 0 }, matrix: null };
+let nextPieceMatrix = null;
 
 let score = 0;
 let level = 1;
+let linhas = 0;
 let dropCounter = 0;
-let dropInterval = 1000; // Começa caindo a cada 1 segundo (1000ms)
-let lastTime = 0;
-
+let dropInterval = intervaloQueda(1);
+let lastTime = null; // null = o próximo quadro zera o relógio
 let isPaused = false;
-let isGameOver = true; // Começa como "Fim de Jogo" até clicar em Iniciar
-let requestId = null;  // Guarda o ID da animação para poder cancelar
+let isGameOver = true;
+let requestId = null;
 
-/* ==========================================================================
-   3. FUNÇÕES AUXILIARES (LÓGICA MATEMÁTICA)
-========================================================================== */
+const pecaAleatoria = () => criarPeca(TIPOS[Math.floor(Math.random() * TIPOS.length)]);
 
-// Cria uma matriz vazia (tabuleiro ou peça)
-function createMatrix(w, h) {
-    const matrix = [];
-    while (h--) {
-        matrix.push(new Array(w).fill(0));
-    }
-    return matrix;
-}
-
-// Cria as peças (Tetrominós) baseadas em letras
-function createPiece(type) {
-    if (type === 'I') return [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]];
-    if (type === 'L') return [[0,5,0],[0,5,0],[0,5,5]];
-    if (type === 'J') return [[0,6,0],[0,6,0],[6,6,0]];
-    if (type === 'O') return [[7,7],[7,7]];
-    if (type === 'S') return [[0,4,4],[4,4,0],[0,0,0]];
-    if (type === 'Z') return [[3,3,0],[0,3,3],[0,0,0]];
-    if (type === 'T') return [[0,2,0],[2,2,2],[0,0,0]];
-}
-
-// Função para rotacionar matriz (peça)
-function rotate(matrix) {
-    // Transposição + Inversão = Rotação 90 graus
-    for (let y = 0; y < matrix.length; ++y) {
-        for (let x = 0; x < y; ++x) {
-            [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-        }
-    }
-    matrix.forEach(row => row.reverse());
-}
-
-/* ==========================================================================
-   4. LÓGICA DO JOGADOR
-========================================================================== */
-
-// Reseta o jogador com uma nova peça
+/* --- Jogador --- */
 function playerReset() {
-    const pieces = 'ILJOTSZ';
-    
-    // Se não tiver próxima peça (início do jogo), cria uma
-    if (!nextPieceMatrix) {
-        nextPieceMatrix = createPiece(pieces[pieces.length * Math.random() | 0]);
-    }
-    
-    // A peça atual vira a "próxima" antiga
-    player.matrix = nextPieceMatrix;
-    // Gera uma nova "próxima"
-    nextPieceMatrix = createPiece(pieces[pieces.length * Math.random() | 0]);
-    
-    // Centraliza no topo
+    player.matrix = nextPieceMatrix ?? pecaAleatoria();
+    nextPieceMatrix = pecaAleatoria();
     player.pos.y = 0;
-    player.pos.x = (board[0].length / 2 | 0) - (player.matrix[0].length / 2 | 0);
-    
-    // Se colidir logo ao nascer, é Game Over
-    if (collide(board, player)) {
-        gameOver();
-    }
-    
-    drawNextPiece(); // Atualiza o desenho da próxima peça no HUD
+    player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
+    drawNextPiece();
+    if (colide(board, player.matrix, player.pos)) gameOver();
 }
 
-// Tenta rotacionar o jogador
 function playerRotate() {
-    const pos = player.pos.x;
-    let offset = 1;
-    rotate(player.matrix);
-    
-    // Wall Kick: Se rodar e bater na parede, empurra para o lado até caber
-    while (collide(board, player)) {
-        player.pos.x += offset;
-        offset = -(offset + (offset > 0 ? 1 : -1));
-        if (offset > player.matrix[0].length) {
-            rotate(player.matrix); // Se não der, roda de volta
-            player.pos.x = pos;
+    const girada = girar(player.matrix);
+    const deslocamentos = girada.length === 4 ? [0, 1, -1, 2, -2, 3, -3] : [0, 1, -1, 2, -2];
+    for (const dx of deslocamentos) {
+        const pos = { x: player.pos.x + dx, y: player.pos.y };
+        if (!colide(board, girada, pos)) {
+            player.matrix = girada;
+            player.pos = pos;
             return;
         }
     }
 }
 
-// Move o jogador lateralmente
 function playerMove(dir) {
-    player.pos.x += dir;
-    if (collide(board, player)) {
-        player.pos.x -= dir; // Se bater, desfaz o movimento
-    }
+    const pos = { x: player.pos.x + dir, y: player.pos.y };
+    if (!colide(board, player.matrix, pos)) player.pos = pos;
 }
 
-// Faz a peça cair
 function playerDrop() {
-    player.pos.y++;
-    if (collide(board, player)) {
-        player.pos.y--; // Desfaz a descida
-        merge(board, player); // Funde a peça no tabuleiro
-        playerReset(); // Cria nova peça
-        arenaSweep(); // Verifica se completou linhas
+    const pos = { x: player.pos.x, y: player.pos.y + 1 };
+    if (colide(board, player.matrix, pos)) {
+        fundir(board, player.matrix, player.pos);
+        // Apaga as linhas ANTES de nascer a peça nova (senão o jogo acaba à toa).
+        const removidas = varrerLinhas(board);
+        if (removidas > 0) {
+            linhas += removidas;
+            score += pontosPorLinhas(removidas, level);
+            level = nivelPorLinhas(linhas);
+            dropInterval = intervaloQueda(level);
+            updateHUD();
+        }
+        playerReset();
+    } else {
+        player.pos = pos;
     }
     dropCounter = 0;
 }
 
-// Verifica colisões entre peça e tabuleiro
-function collide(board, player) {
-    const [m, o] = [player.matrix, player.pos];
-    for (let y = 0; y < m.length; ++y) {
-        for (let x = 0; x < m[y].length; ++x) {
-            if (m[y][x] !== 0 &&
-               (board[y + o.y] && board[y + o.y][x + o.x]) !== 0) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-// Copia a peça do jogador para a matriz do tabuleiro (fixa ela)
-function merge(board, player) {
-    player.matrix.forEach((row, y) => {
-        row.forEach((value, x) => {
-            if (value !== 0) {
-                board[y + player.pos.y][x + player.pos.x] = value;
-            }
-        });
-    });
-}
-
-// Verifica linhas completas
-function arenaSweep() {
-    let rowCount = 0;
-    outer: for (let y = board.length - 1; y > 0; --y) {
-        for (let x = 0; x < board[y].length; ++x) {
-            if (board[y][x] === 0) {
-                continue outer; // Se achar um zero, a linha não está cheia
-            }
-        }
-        
-        // Remove a linha cheia e adiciona uma vazia no topo
-        const row = board.splice(y, 1)[0].fill(0);
-        board.unshift(row);
-        ++y;
-        rowCount++;
-    }
-    
-    // Pontuação simples
-    if (rowCount > 0) {
-        score += rowCount * 1 * level; // Mais pontos em níveis altos
-        level = Math.floor(score / 50) + 1; // Sobe de nível a cada 100 pontos
-        
-        // Aumenta velocidade (diminui intervalo)
-        dropInterval = Math.max(100, 1000 - (level * 50)); 
-        
-        updateHUD();
-    }
-}
-
-/* ==========================================================================
-   5. DESENHO (RENDERIZAÇÃO)
-========================================================================== */
-
-function draw() {
-    // Limpa a tela (fundo preto)
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Desenha o Tabuleiro (Peças fixas)
-    drawMatrix(board, {x: 0, y: 0}, ctx);
-    
-    // Desenha a Peça do Jogador
-    drawMatrix(player.matrix, player.pos, ctx);
-}
-
-// Desenha uma matriz genérica no contexto dado
-function drawMatrix(matrix, offset, context) {
+/* --- Desenho --- */
+function drawMatrix(matrix, offset, context, tamanho) {
     matrix.forEach((row, y) => {
         row.forEach((value, x) => {
-            if (value !== 0) {
-                // Efeito Neon
-                context.shadowBlur = 15;
-                context.shadowColor = COLORS[value];
-                context.fillStyle = COLORS[value];
-                
-                // Desenha o quadrado
-                context.fillRect(
-                    (x + offset.x) * BLOCK_SIZE,
-                    (y + offset.y) * BLOCK_SIZE,
-                    BLOCK_SIZE - 1, // -1 para deixar uma borda preta fina
-                    BLOCK_SIZE - 1
-                );
-                
-                // Reseta sombra para performance
-                context.shadowBlur = 0;
-            }
+            if (value === 0) return;
+            context.shadowBlur = 15;
+            context.shadowColor = COLORS[value];
+            context.fillStyle = COLORS[value];
+            context.fillRect((x + offset.x) * tamanho, (y + offset.y) * tamanho, tamanho - 1, tamanho - 1);
+            context.shadowBlur = 0;
         });
     });
 }
 
-// Desenha a próxima peça nos mini-canvas (PC e Mobile)
+function draw() {
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawMatrix(board, { x: 0, y: 0 }, ctx, BLOCK_SIZE);
+    if (player.matrix) drawMatrix(player.matrix, player.pos, ctx, BLOCK_SIZE);
+}
+
+// Próxima peça centralizada, com o bloco ajustado ao tamanho de cada quadrinho.
 function drawNextPiece() {
-    [nextCtxPC, nextCtxMob].forEach(ctx => {
-        if (!ctx) return;
-        
-        // Limpa
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, 100, 100); // Tamanho arbitrário grande o suficiente
-        
-        // Calcula tamanho do bloco para o mini preview (menor que o jogo)
-        const miniBlock = 20; 
-        
-        nextPieceMatrix.forEach((row, y) => {
-            row.forEach((value, x) => {
-                if (value !== 0) {
-                    ctx.fillStyle = COLORS[value];
-                    ctx.fillRect(x * miniBlock, y * miniBlock, miniBlock - 1, miniBlock - 1);
-                }
-            });
+    const celulas = [];
+    nextPieceMatrix.forEach((row, y) => row.forEach((v, x) => { if (v) celulas.push({ x, y, v }); }));
+    const minX = Math.min(...celulas.map(c => c.x)), maxX = Math.max(...celulas.map(c => c.x));
+    const minY = Math.min(...celulas.map(c => c.y)), maxY = Math.max(...celulas.map(c => c.y));
+    const larg = maxX - minX + 1, alt = maxY - minY + 1;
+
+    nextCtxs.forEach(c => {
+        const { width, height } = c.canvas;
+        const bloco = Math.floor(Math.min(width, height) / 4.5);
+        const ox = (width - larg * bloco) / 2, oy = (height - alt * bloco) / 2;
+        c.fillStyle = '#000';
+        c.fillRect(0, 0, width, height);
+        celulas.forEach(({ x, y, v }) => {
+            c.fillStyle = COLORS[v];
+            c.fillRect(ox + (x - minX) * bloco, oy + (y - minY) * bloco, bloco - 1, bloco - 1);
         });
     });
 }
 
 function updateHUD() {
-    scoreEls.forEach(el => { if(el) el.innerText = score.toString().padStart(5, '0'); });
-    levelEls.forEach(el => { if(el) el.innerText = level; });
+    scoreEls.forEach(el => { if (el) el.textContent = String(score).padStart(5, '0'); });
+    levelEls.forEach(el => { if (el) el.textContent = level; });
 }
 
-/* ==========================================================================
-   6. LOOP DO JOGO
-========================================================================== */
-
-function update(time = 0) {
+/* --- Laço --- */
+// Só é chamado pelo requestAnimationFrame, então `time` está sempre na mesma escala.
+function update(time) {
     if (isPaused || isGameOver) return;
-
-    const deltaTime = time - lastTime;
+    if (lastTime === null) lastTime = time;
+    dropCounter += time - lastTime;
     lastTime = time;
-
-    dropCounter += deltaTime;
-    if (dropCounter > dropInterval) {
-        playerDrop();
-    }
-
+    if (dropCounter > dropInterval) playerDrop();
+    if (isGameOver) return;
     draw();
     requestId = requestAnimationFrame(update);
 }
 
-/* ==========================================================================
-   7. CONTROLES E EVENTOS
-========================================================================== */
-
-// Iniciar Jogo
-window.startGame = function() {
-    if (!isGameOver && !isPaused) return; // Se já roda, ignora
-
-    // Reseta estado
-    board = createMatrix(COLS, ROWS);
-    score = 0;
-    level = 1;
-    dropInterval = 1000;
-    isGameOver = false;
-    isPaused = false;
-    
-    // Esconde botões
-    btnStartOverlay.style.display = 'none';
-    pauseOverlay.style.display = 'none';
-    
-    playerReset();
-    updateHUD();
-    update();
-};
-
-// Pausar
-window.togglePause = function() {
-    if (isGameOver) return;
-    
-    isPaused = !isPaused;
-    
-    if (isPaused) {
-        pauseOverlay.style.display = 'block';
-        cancelAnimationFrame(requestId);
-    } else {
-        pauseOverlay.style.display = 'none';
-        lastTime = performance.now();
-        update();
-    }
-};
-
-// Game Over
-function gameOver() {
-    isGameOver = true;
+function agendarLaco() {
     cancelAnimationFrame(requestId);
-    
-    // Salva Recorde (se existir função)
-    if (window.salvarRecordeDB) window.salvarRecordeDB(score);
-    
-    alert("FIM DE JOGO! Pontos: " + score);
-    
-    btnStartOverlay.style.display = 'block';
-    btnStartOverlay.innerText = "↻ TENTAR NOVAMENTE";
+    lastTime = null;
+    requestId = requestAnimationFrame(update);
 }
 
-// Input Unificado (Teclado e Toque)
-window.handleInput = function(action, event) {
-    if (event && event.cancelable) event.preventDefault(); // Evita scroll no celular
-    
-    if (isGameOver || isPaused) return;
+/* --- Controles --- */
+window.startGame = function () {
+    if (!isGameOver) return;
+    board = criarMatriz(COLS, ROWS);
+    score = 0;
+    level = 1;
+    linhas = 0;
+    dropCounter = 0;
+    dropInterval = intervaloQueda(1);
+    nextPieceMatrix = null;
+    isGameOver = false;
+    isPaused = false;
+    btnStartOverlay.style.display = 'none';
+    pauseOverlay.style.display = 'none';
+    esconderFimDeJogo(frame);
+    playerReset();
+    updateHUD();
+    agendarLaco();
+};
 
+window.togglePause = function () {
+    if (isGameOver) return;
+    isPaused = !isPaused;
+    pauseOverlay.style.display = isPaused ? 'block' : 'none';
+    if (isPaused) cancelAnimationFrame(requestId);
+    else agendarLaco();
+};
+
+async function gameOver() {
+    isGameOver = true;
+    cancelAnimationFrame(requestId);
+    draw();
+    btnStartOverlay.style.display = 'block';
+    btnStartOverlay.innerText = '↻ TENTAR NOVAMENTE';
+    const pontos = score;
+    mostrarFimDeJogo(frame, { titulo: 'FIM DE JOGO', pontos, recordeNovo: false });
+    const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(pontos, 'tetris') : false;
+    if (recordeNovo && isGameOver) mostrarFimDeJogo(frame, { titulo: 'FIM DE JOGO', pontos, recordeNovo });
+}
+
+window.handleInput = function (action, event) {
+    if (event && event.cancelable) event.preventDefault();
+    if (isGameOver || isPaused) return;
     if (action === 'left') playerMove(-1);
     if (action === 'right') playerMove(1);
     if (action === 'down') playerDrop();
     if (action === 'rotate') playerRotate();
-    
-    draw(); // Redesenha imediatamente para resposta rápida
+    if (!isGameOver) draw();
 };
 
-// Eventos de Teclado
+const TECLAS = {
+    ArrowLeft: 'left', ArrowRight: 'right', ArrowDown: 'down', ArrowUp: 'rotate', r: 'rotate', R: 'rotate',
+};
+
 document.addEventListener('keydown', event => {
-    if (event.keyCode === 37) handleInput('left');
-    else if (event.keyCode === 39) handleInput('right');
-    else if (event.keyCode === 40) handleInput('down');
-    else if (event.keyCode === 38 || event.keyCode === 82) handleInput('rotate'); // Cima ou R
-    else if (event.keyCode === 80) togglePause(); // P para Pause
+    const emJogo = !isGameOver;
+    if (event.key === 'p' || event.key === 'P' || event.key === 'Escape') {
+        if (emJogo) { event.preventDefault(); window.togglePause(); }
+        return;
+    }
+    const acao = TECLAS[event.key];
+    if (acao && emJogo) {
+        event.preventDefault(); // setas não rolam a página durante o jogo
+        window.handleInput(acao);
+    }
 });
