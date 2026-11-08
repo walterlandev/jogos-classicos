@@ -1,19 +1,21 @@
 /* ==========================================================================
    Breakout — tela, laço e controles.
    Física por tempo real (px/s × segundos), igual em qualquer taxa de quadros.
-   A rebatida e a velocidade por nível moram em logica/bola.js.
+   Rebatida e velocidade por fase em logica/bola.js; cores da paleta do tema.
 ========================================================================== */
 import { velocidadeDoNivel, rebaterNaRaquete } from './logica/bola.js';
 import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
+import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
+import { ligarToque, ligarSegurar } from './controles.js';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const frame = canvas.parentElement;
-
-const startBtn = document.getElementById('startBtnOverlay');
-const scoreDisplay = [document.getElementById('scorePC'), document.getElementById('scoreMob')];
-const levelDisplay = [document.getElementById('levelPC'), document.getElementById('levelMob')];
-const pauseOverlay = document.getElementById('pauseOverlay');
+const pontosEl = document.getElementById('pontos');
+const faseEl = document.getElementById('fase');
+const camadaInicio = document.getElementById('camadaInicio');
+const camadaPausa = document.getElementById('camadaPausa');
+const tituloInicio = camadaInicio.querySelector('.camada-titulo');
+const botaoJogar = document.getElementById('botaoJogar');
 
 /* --- Estado --- */
 let score = 0;
@@ -28,12 +30,12 @@ const paddleHeight = 10;
 const paddleSegmentWidth = 15;
 const paddleWidth = paddleSegmentWidth * 5;
 const paddleY = canvas.height - paddleHeight - 5;
-const PADDLE_SPEED = 420; // px/s (era 7 px por quadro a 60 Hz)
+const PADDLE_SPEED = 420; // px/s
 let paddleX = (canvas.width - paddleWidth) / 2;
 
 /* --- Bola --- */
-let x, y;   // posição
-let vx, vy; // velocidade em px/s
+let x = canvas.width / 2, y = canvas.height - 30;
+let vx = 0, vy = 0; // px/s
 const ballRadius = 6;
 
 /* --- Tijolos --- */
@@ -49,25 +51,6 @@ let bricks = [];
 /* --- Controles --- */
 let rightPressed = false;
 let leftPressed = false;
-
-document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowRight' || e.key === 'Right') rightPressed = true;
-    else if (e.key === 'ArrowLeft' || e.key === 'Left') leftPressed = true;
-    else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
-        if (gameRunning) { e.preventDefault(); window.togglePause(); }
-        return;
-    } else return;
-    if (gameRunning) e.preventDefault(); // setas não rolam a página durante o jogo
-});
-document.addEventListener('keyup', e => {
-    if (e.key === 'ArrowRight' || e.key === 'Right') rightPressed = false;
-    else if (e.key === 'ArrowLeft' || e.key === 'Left') leftPressed = false;
-});
-
-window.handleInput = function (dir, isPressed) {
-    if (dir === 'right') rightPressed = isPressed;
-    if (dir === 'left') leftPressed = isPressed;
-};
 
 /* --- Preparação --- */
 function resetBall() {
@@ -115,9 +98,7 @@ function collisionDetection() {
     }
 }
 
-function checkWin() {
-    return bricks.every(coluna => coluna.every(b => b.status === 0));
-}
+const checkWin = () => bricks.every(coluna => coluna.every(b => b.status === 0));
 
 function nextLevel() {
     if (level < 10) {
@@ -126,49 +107,38 @@ function nextLevel() {
         initBricks();
         updateHUD();
     } else {
-        gameOver('VOCÊ VENCEU!');
+        gameOver('Você venceu!');
     }
 }
 
 function updateHUD() {
-    scoreDisplay.forEach(el => { if (el) el.textContent = String(score).padStart(5, '0'); });
-    levelDisplay.forEach(el => { if (el) el.textContent = level; });
+    pontosEl.textContent = score;
+    faseEl.textContent = level;
 }
 
 /* --- Desenho --- */
-function drawBall() {
-    ctx.fillStyle = '#0ff';
+function render() {
+    const p = paleta();
+    ctx.fillStyle = p.fundo;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let c = 0; c < brickColumnCount; c++) {
+        for (let r = 0; r < brickRowCount; r++) {
+            const b = bricks[c]?.[r];
+            if (!b || b.status !== 1) continue;
+            ctx.fillStyle = p.tijolos[r % p.tijolos.length];
+            ctx.fillRect(b.x, b.y, brickWidth, brickHeight);
+        }
+    }
+    ctx.fillStyle = p.bola;
     ctx.fillRect(x - ballRadius / 2, y - ballRadius / 2, ballRadius, ballRadius);
-}
-
-function drawPaddle() {
-    ctx.fillStyle = '#0f0';
+    ctx.fillStyle = p.raquete;
     for (let i = 0; i < 5; i++) {
         ctx.fillRect(paddleX + i * paddleSegmentWidth, paddleY, paddleSegmentWidth - 1, paddleHeight);
     }
 }
 
-function drawBricks() {
-    for (let c = 0; c < brickColumnCount; c++) {
-        for (let r = 0; r < brickRowCount; r++) {
-            const b = bricks[c][r];
-            if (b.status !== 1) continue;
-            ctx.fillStyle = `hsl(${r * 40}, 100%, 50%)`;
-            ctx.fillRect(b.x, b.y, brickWidth, brickHeight);
-        }
-    }
-}
-
-function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBricks();
-    drawBall();
-    drawPaddle();
-}
-
 /* --- Física de um passo de dt segundos --- */
 function atualizar(dt) {
-    // Raquete
     if (rightPressed) paddleX = Math.min(canvas.width - paddleWidth, paddleX + PADDLE_SPEED * dt);
     else if (leftPressed) paddleX = Math.max(0, paddleX - PADDLE_SPEED * dt);
 
@@ -190,7 +160,7 @@ function atualizar(dt) {
     }
 
     if (y > canvas.height) {
-        gameOver('FIM DE JOGO');
+        gameOver('Fim de jogo');
         return;
     }
     collisionDetection();
@@ -214,21 +184,23 @@ function agendarLaco() {
     animationId = requestAnimationFrame(draw);
 }
 
-/* --- Fim de jogo --- */
+/* --- Partida --- */
 async function gameOver(msg) {
     gameRunning = false;
     cancelAnimationFrame(animationId);
+    rightPressed = leftPressed = false;
     render();
-    startBtn.style.display = 'block';
-    startBtn.innerText = '↻ REINICIAR';
     const pontos = score;
-    mostrarFimDeJogo(frame, { titulo: msg, pontos, recordeNovo: false });
+    tituloInicio.textContent = msg;
+    botaoJogar.textContent = 'Jogar de novo';
+    mostrarFimDeJogo(camadaInicio, { pontos, recordeNovo: false });
+    camadaInicio.hidden = false;
+    botaoJogar.focus();
     const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(pontos, 'breakout') : false;
-    if (recordeNovo && !gameRunning) mostrarFimDeJogo(frame, { titulo: msg, pontos, recordeNovo });
+    if (recordeNovo && !gameRunning) mostrarFimDeJogo(camadaInicio, { pontos, recordeNovo });
 }
 
-/* --- Funções chamadas pelo HTML --- */
-window.startGame = function () {
+function startGame() {
     if (gameRunning) return;
     score = 0;
     level = 1;
@@ -237,16 +209,53 @@ window.startGame = function () {
     updateHUD();
     gameRunning = true;
     paused = false;
-    startBtn.style.display = 'none';
-    pauseOverlay.style.display = 'none';
-    esconderFimDeJogo(frame);
+    camadaInicio.hidden = true;
+    camadaPausa.hidden = true;
+    esconderFimDeJogo(camadaInicio);
     agendarLaco();
-};
+}
 
-window.togglePause = function () {
+function togglePause() {
     if (!gameRunning) return;
     paused = !paused;
-    pauseOverlay.style.display = paused ? 'block' : 'none';
-    if (paused) cancelAnimationFrame(animationId);
-    else agendarLaco();
-};
+    camadaPausa.hidden = !paused;
+    if (paused) {
+        cancelAnimationFrame(animationId);
+        rightPressed = leftPressed = false;
+        camadaPausa.querySelector('button').focus();
+    } else {
+        agendarLaco();
+    }
+}
+
+/* --- Ligações --- */
+botaoJogar.addEventListener('click', startGame);
+document.querySelectorAll('[data-acao]').forEach(botao => {
+    const nome = botao.dataset.acao;
+    if (nome === 'pausa') {
+        if (botao.classList.contains('controle')) ligarToque(botao, togglePause);
+        else botao.addEventListener('click', togglePause);
+    } else {
+        const definir = (valor) => { if (nome === 'left') leftPressed = valor; else rightPressed = valor; };
+        ligarSegurar(botao, () => definir(true), () => definir(false));
+    }
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'Right') rightPressed = true;
+    else if (e.key === 'ArrowLeft' || e.key === 'Left') leftPressed = true;
+    else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        if (gameRunning) { e.preventDefault(); togglePause(); }
+        return;
+    } else return;
+    if (gameRunning) e.preventDefault(); // setas não rolam a página durante o jogo
+});
+document.addEventListener('keyup', e => {
+    if (e.key === 'ArrowRight' || e.key === 'Right') rightPressed = false;
+    else if (e.key === 'ArrowLeft' || e.key === 'Left') leftPressed = false;
+});
+
+ligarBotaoTema(document.getElementById('botaoTema'));
+aoMudarTema(render);
+initBricks();
+render();
