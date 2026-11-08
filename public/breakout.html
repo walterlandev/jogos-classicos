@@ -25,24 +25,28 @@
         </button>
     </header>
 
-    <main class="jogo" style="--proporcao: 1.5; --largura-max: 820px">
+    <main class="jogo" style="--proporcao: 0.7143; --largura-max: 470px">
         <section class="placar" aria-label="Placar">
             <dl class="placar-lista">
-                <div class="placar-item"><dt>Pontos</dt><dd id="pontos">0</dd></div>
+                <div class="placar-item"><dt>Pontos</dt><dd><span id="pontos">0</span><small class="placar-extra">Recorde <span id="userScore">—</span></small></dd></div>
                 <div class="placar-item"><dt>Fase</dt><dd id="fase">1</dd></div>
-                <div class="placar-item"><dt>Recorde</dt><dd id="userScore">—</dd></div>
+                <div class="placar-item"><dt>Vidas</dt><dd id="vidas">3</dd></div>
             </dl>
             <button class="botao so-pc" type="button" data-acao="pausa">Pausar (P)</button>
         </section>
 
         <div class="campo">
             <div class="tela">
-                <canvas id="gameCanvas" width="480" height="320" role="img" aria-label="Campo do Breakout"></canvas>
+                <canvas id="gameCanvas" width="400" height="560" role="img" aria-label="Campo do Breakout"></canvas>
+                <p class="aviso-jogo" id="avisoJogo" aria-live="polite"></p>
                 <div class="camada" id="camadaInicio">
                     <p class="camada-titulo">Breakout</p>
                     <div class="fim-de-jogo" role="status" hidden></div>
+                    <label class="seletor-nivel">Começar na fase
+                        <select id="faseInicial"><option value="1">1</option></select>
+                    </label>
                     <button class="botao botao-primario" type="button" id="botaoJogar">Jogar</button>
-                    <p class="dica"><span class="so-pc">Setas movem a raquete, P pausa.</span><span class="so-toque">Segure os botões abaixo para mover.</span></p>
+                    <p class="dica"><span class="so-pc">Mova o mouse ou use as setas. Clique ou Espaço lança a bola; P pausa.</span><span class="so-toque">Arraste o dedo no campo para mover; toque para lançar.</span></p>
                 </div>
                 <div class="camada" id="camadaPausa" hidden>
                     <p class="camada-titulo">Pausado</p>
@@ -52,14 +56,8 @@
         </div>
 
         <div class="controles">
-            <button class="controle controle-largo" type="button" data-acao="left" aria-label="Mover para a esquerda">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-            </button>
             <button class="controle controle-pequeno" type="button" data-acao="pausa" aria-label="Pausar">
                 <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
-            </button>
-            <button class="controle controle-largo" type="button" data-acao="right" aria-label="Mover para a direita">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
             </button>
         </div>
     </main>
