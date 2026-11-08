@@ -21,7 +21,8 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
   `gstatic`). Coleção `usuarios/{uid}` com `nome`, `recorde_tetris`,
   `recorde_snake`, `recorde_breakout`, `data_recorde`, `tema` (escolha do
   jogador) e `itens_liberados` (reservado: só o servidor grava; Etapa 6).
-  O Blockix grava em `recorde_tetris` (campo antigo mantido).
+  Blockix grava em `recorde_blockix` (desde a Etapa 3a; `recorde_tetris`
+  fica no banco, fora da tela) e `nivel_max_blockix` (libera nível inicial).
 - **Hospedagem:** Firebase Hosting (`firebase.json` publica `public/`).
 - **Repositório:** GitHub `walterlandev/jogos-classicos` (público), remoto
   por HTTPS. O push NÃO publica o site; a publicação é um passo à parte.
