@@ -266,6 +266,7 @@ dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var
 }
 .placar-item canvas { width: 44px; height: 44px; image-rendering: pixelated; }
 .so-pc { display: none; }
+.so-toque { display: inline; }
 
 .campo { grid-area: campo; min-height: 0; container-type: size; display: grid; place-items: center; }
 .tela {
@@ -304,7 +305,7 @@ dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var
 
 .controles {
     grid-area: controles;
-    display: flex; align-items: center; justify-content: center; gap: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
     touch-action: manipulation; user-select: none; -webkit-user-select: none;
 }
 .controle {
@@ -331,17 +332,22 @@ dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var
 /* PC com mouse: campo no centro, placar ao lado, sem botões de toque. */
 @media (min-width: 900px) and (pointer: fine) {
     .jogo {
-        width: 100%; max-width: 1100px; margin: 0 auto;
-        grid-template-areas: "campo placar";
-        grid-template-columns: minmax(0, 1fr) 230px;
+        width: 100%;
+        grid-template-areas: ". campo placar";
+        /* Coluna do meio com a largura real do campo; o placar encosta nele. */
+        grid-template-columns:
+            minmax(0, 1fr)
+            minmax(0, min(calc((100dvh - 150px) * var(--proporcao) + 2 * var(--moldura)), var(--largura-max, 900px)))
+            minmax(230px, 1fr);
         grid-template-rows: minmax(0, 1fr);
         gap: 24px; padding: 20px 24px 24px;
     }
-    .placar { align-content: start; }
+    .placar { align-content: start; width: 230px; }
     .placar-lista { grid-template-columns: 1fr; }
     .placar-item { padding: 10px 14px; }
     .placar-item dd { font-size: 28px; }
     .placar-item canvas { width: 72px; height: 72px; }
     .so-pc { display: inline-flex; }
+    .so-toque { display: none; }
     .controles { display: none; }
 }

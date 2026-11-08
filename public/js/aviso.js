@@ -15,7 +15,8 @@ export function mostrarFimDeJogo(area, { titulo, pontos, recordeNovo }) {
         if (classe) p.className = classe;
         return p;
     };
-    faixa.replaceChildren(linha(titulo, 'fim-titulo'), linha(`${pontos} pontos`));
+    faixa.replaceChildren(linha(`${pontos} pontos`));
+    if (titulo) faixa.prepend(linha(titulo, 'fim-titulo'));
     if (recordeNovo) faixa.append(linha('Recorde novo!', 'fim-recorde'));
     faixa.hidden = false;
 }

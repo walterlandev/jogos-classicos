@@ -5,6 +5,18 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "redirects": [
+      {
+        "source": "/tetris.html",
+        "destination": "/blockix.html",
+        "type": 301
+      },
+      {
+        "source": "/Breakout.html",
+        "destination": "/breakout.html",
+        "type": 301
+      }
     ]
   }
 }
