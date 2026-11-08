@@ -3,7 +3,7 @@
 Resumo curto para começar uma sessão sem ler tudo. Regras de trabalho:
 `CLAUDE.md`. Notas e diário: Obsidian, `wasobsidia/Projetos/Jogos Clássicos/`.
 
-Atualizado em: 08/11/2026 (Etapa 3b — Breakout — concluída).
+Atualizado em: 08/11/2026 (Etapa 3 completa — Blockix, Breakout e Snake).
 
 ## O que é
 
@@ -44,7 +44,11 @@ email e senha, recorde por jogo e ranking dos 10 melhores, no Firebase.
   + geradas sem fim, tijolos de 1–3 golpes e indestrutíveis, power-ups
   (larga, multibola, lenta, vida), fase inicial liberada. Ranking novo em
   `recorde_breakout_v2`.
-- Próxima: **Etapa 3c (Snake)** — fases com mapas e obstáculos.
+- **Etapa 3c (Snake) feita:** 15 mapas + gerados, meta de frutas por fase,
+  bordas abertas/fechadas, 3 vidas, fruta dourada, deslizar no campo, fase
+  inicial liberada. Ranking novo em `recorde_snake_v2`.
+- Próxima: **Etapa 4 (nível do jogador)** — XP somado dos três jogos, nível
+  da conta, conquistas, nível no menu e no ranking.
 
 ## Pendências
 

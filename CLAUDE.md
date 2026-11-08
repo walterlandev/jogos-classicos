@@ -25,6 +25,9 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
   fica no banco, fora da tela) e `nivel_max_blockix` (libera nível inicial).
   Breakout grava em `recorde_breakout_v2` (Etapa 3b) e `nivel_max_breakout`
   (fase máxima). As 20 fases desenhadas ficam em `js/logica/breakout.js`.
+  Snake grava em `recorde_snake_v2` (Etapa 3c) e `nivel_max_snake`; os 15
+  mapas ficam em `js/logica/cobra.js` (todo mapa passa por teste de área
+  fechada).
 - **Hospedagem:** Firebase Hosting (`firebase.json` publica `public/`).
 - **Repositório:** GitHub `walterlandev/jogos-classicos` (público), remoto
   por HTTPS. O push NÃO publica o site; a publicação é um passo à parte.
