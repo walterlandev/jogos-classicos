@@ -140,6 +140,9 @@ body {
     color: #000;
 }
 
+/* Controles e placar de celular ficam escondidos no PC */
+.mobile-controls, .mobile-only { display: none; }
+
 /* Responsividade */
 @media (max-width: 768px) {
     .desktop-only { display: none; }
@@ -158,7 +161,7 @@ body {
 
 /* HUD Footer Mobile */
 .hud-footer {
-    display: flex;
+    /* display vem de .mobile-only: escondido no PC, flex no celular */
     justify-content: space-around;
     width: 100%;
     margin-top: 20px;
