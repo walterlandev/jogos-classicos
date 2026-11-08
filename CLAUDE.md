@@ -60,7 +60,7 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
    altera, recordes/XP/níveis só sobem com teto, `itens_liberados` nunca
    pelo navegador. **Mudou as regras ou um campo gravado pelo site? Rode
    `npm run test:regras`** (emulador; precisa do Java em
-   `C:\Program Files\Microsoft\jdk-21.0.13.21-hotspotin` no PATH) e
+   `C:\Program Files\Microsoft\jdk-21.0.13.21-hotspot\bin` no PATH) e
    acrescente o caso em `tests-regras/`. Campo novo no perfil = regra nova.
 3. **A `apiKey` do Firebase em `auth.js` não é segredo** (vai ao navegador
    de qualquer visitante). Segredo de verdade (conta de serviço, `.env`)
