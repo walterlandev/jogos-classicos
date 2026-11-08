@@ -28,6 +28,10 @@ Mantenha o resumo atualizado quando fizer mudanças relevantes.
   Snake grava em `recorde_snake_v2` (Etapa 3c) e `nivel_max_snake`; os 15
   mapas ficam em `js/logica/cobra.js` (todo mapa passa por teste de área
   fechada).
+- **Nível do jogador (Etapa 4):** `js/logica/progresso.js` (XP, curva,
+  15 conquistas, mescla) + `js/progresso.js` (guarda no navegador, mescla com o
+  perfil). Cada jogo chama `registrarPartida(jogo, resumo)` no fim. Perfil:
+  `progresso` e `xp` (ranking Geral). Tema `lousa` tem `nivelMinimo: 10`.
 - **Hospedagem:** Firebase Hosting (`firebase.json` publica `public/`).
 - **Repositório:** GitHub `walterlandev/jogos-classicos` (público), remoto
   por HTTPS. O push NÃO publica o site; a publicação é um passo à parte.

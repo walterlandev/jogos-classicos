@@ -3,7 +3,7 @@
 Resumo curto para começar uma sessão sem ler tudo. Regras de trabalho:
 `CLAUDE.md`. Notas e diário: Obsidian, `wasobsidia/Projetos/Jogos Clássicos/`.
 
-Atualizado em: 08/11/2026 (Etapa 3 completa — Blockix, Breakout e Snake).
+Atualizado em: 08/11/2026 (Etapa 4 — nível do jogador — concluída).
 
 ## O que é
 
@@ -15,7 +15,8 @@ email e senha, recorde por jogo e ranking dos 10 melhores, no Firebase.
 | Parte | Arquivos |
 |---|---|
 | Menu, login e cadastro | `public/index.html`, `js/menu.js` |
-| Temas | `css/base.css`, `css/temas/*.css`, `js/temas.js`, `js/logica/temas.js`, `DESIGN.md` |
+| Temas | `css/base.css`, `css/temas/*.css` (4), `js/temas.js`, `js/logica/temas.js`, `DESIGN.md` |
+| Nível e conquistas | `js/progresso.js`, `js/logica/progresso.js` |
 | Firebase (auth, recorde, ranking, tema do perfil) | `public/js/auth.js` |
 | Comuns dos jogos | `js/aviso.js` (fim de jogo), `js/controles.js` (toque) |
 | Blockix | `public/blockix.html`, `js/blockix.js`, `js/logica/blocos.js` |
@@ -47,8 +48,13 @@ email e senha, recorde por jogo e ranking dos 10 melhores, no Firebase.
 - **Etapa 3c (Snake) feita:** 15 mapas + gerados, meta de frutas por fase,
   bordas abertas/fechadas, 3 vidas, fruta dourada, deslizar no campo, fase
   inicial liberada. Ranking novo em `recorde_snake_v2`.
-- Próxima: **Etapa 4 (nível do jogador)** — XP somado dos três jogos, nível
-  da conta, conquistas, nível no menu e no ranking.
+- **Etapa 4 (nível do jogador) feita:** XP por partida, nível da conta
+  (`50·(n−1)·n`), 15 conquistas, faixa de nível e painel no menu, aba Geral
+  no ranking e nível ao lado do nome; 4º tema **Lousa da escola** liberado no
+  nível 10. Progresso no navegador e no perfil (mesclados ao entrar).
+- Próxima: **Etapa 5** — `firestore.rules` versionado (só o dono grava,
+  recorde/XP só sobem, `itens_liberados` só servidor), sons, efeitos,
+  auditoria. Também pendente: publicar o site (aguarda ordem do usuário).
 
 ## Pendências
 
