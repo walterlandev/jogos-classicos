@@ -57,6 +57,42 @@ export function varrerLinhas(tabuleiro) {
     return removidas;
 }
 
-export const pontosPorLinhas = (qtd, nivel) => qtd * nivel;
-export const nivelPorLinhas = (total) => Math.floor(total / 10) + 1;
-export const intervaloQueda = (nivel) => Math.max(100, 1000 - (nivel - 1) * 50);
+// Saco de 7: uma peça de cada tipo, embaralhada (Fisher-Yates).
+export function novoSaco(aleatorio = Math.random) {
+    const saco = [...TIPOS];
+    for (let i = saco.length - 1; i > 0; i--) {
+        const j = Math.floor(aleatorio() * (i + 1));
+        [saco[i], saco[j]] = [saco[j], saco[i]];
+    }
+    return saco;
+}
+
+const PONTOS_LINHAS = [0, 100, 300, 500, 800];
+export const PONTOS_QUEDA = { suave: 1, instantanea: 2 };
+
+// Pontos de uma peça encaixada que limpou `qtd` linhas.
+// estado.combo: limpezas seguidas menos 1 (-1 = nenhuma em andamento).
+// estado.b2b: a última limpeza foi de quatro linhas.
+export function pontuar(qtd, nivel, estado = { combo: -1, b2b: false }) {
+    if (qtd === 0) return { pontos: 0, combo: -1, b2b: estado.b2b, quatroSeguidas: false };
+    const quatro = qtd === 4;
+    const quatroSeguidas = quatro && estado.b2b;
+    let pontos = PONTOS_LINHAS[qtd] * nivel;
+    if (quatroSeguidas) pontos = Math.floor(pontos * 1.5);
+    const combo = estado.combo + 1;
+    if (combo > 0) pontos += 50 * combo * nivel;
+    return { pontos, combo, b2b: quatro, quatroSeguidas };
+}
+
+export const nivelPorLinhas = (total, inicial = 1) => inicial + Math.floor(total / 10);
+export const intervaloQueda = (nivel) => Math.max(50, Math.round(1000 * 0.85 ** (nivel - 1)));
+
+// Linha (y) onde a peça pararia se caísse direto.
+export function linhaFantasma(tabuleiro, matriz, pos) {
+    let y = pos.y;
+    while (!colide(tabuleiro, matriz, { x: pos.x, y: y + 1 })) y++;
+    return y;
+}
+
+// Níveis em que o jogador pode começar, conforme o maior nível já alcançado.
+export const niveisIniciais = (nivelMax) => [1, 5, 10, 15, 20].filter(n => n === 1 || n <= nivelMax);
