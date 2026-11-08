@@ -1,8 +1,11 @@
-// Lógica pura do Breakout: sem DOM e sem canvas, testada em tests/bola.test.js.
+// Lógica pura da bola do Breakout: sem DOM e sem canvas, testada em tests/bola.test.js.
 // Velocidades em pixels por segundo (iguais em 60 Hz, 144 Hz ou qualquer tela).
 
-// Mesma rapidez da versão antiga a 60 quadros por segundo.
-export const velocidadeDoNivel = (nivel) => Math.round((2 + nivel * 0.5) * Math.SQRT2 * 60);
+// Velocidade base da fase, com teto para continuar jogável nas fases geradas.
+export const velocidadeDaFase = (fase) => Math.min(520, 250 + 12 * (fase - 1));
+
+// Cada rebatida na raquete acelera 1,5 %, até + 35 % (reinicia a cada fase/vida).
+export const aceleracao = (rebatidas) => Math.min(1.35, 1 + 0.015 * rebatidas);
 
 // A ponta esquerda da raquete manda a bola a 160°, a direita a 20°, o centro a 90°.
 // A velocidade total nunca muda na rebatida.

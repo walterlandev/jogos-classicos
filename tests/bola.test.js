@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { velocidadeDoNivel, rebaterNaRaquete } from '../public/js/logica/bola.js';
+import { velocidadeDaFase, aceleracao, rebaterNaRaquete } from '../public/js/logica/bola.js';
 
 const grau = (vx, vy) => Math.atan2(-vy, vx) * 180 / Math.PI;
 
@@ -20,7 +20,11 @@ test('centro da raquete sobe reto; pontas abrem o ângulo', () => {
     assert.ok(rebaterNaRaquete(75, 0, 75, 300).vx > 0);
 });
 
-test('velocidade cresce com o nível', () => {
-    assert.ok(velocidadeDoNivel(2) > velocidadeDoNivel(1));
-    assert.equal(velocidadeDoNivel(1), Math.round(2.5 * Math.SQRT2 * 60));
+test('velocidade por fase com teto e aceleração por rebatida', () => {
+    assert.equal(velocidadeDaFase(1), 250);
+    assert.equal(velocidadeDaFase(10), 358);
+    assert.equal(velocidadeDaFase(99), 520);
+    assert.equal(aceleracao(0), 1);
+    assert.ok(Math.abs(aceleracao(10) - 1.15) < 1e-9);
+    assert.equal(aceleracao(100), 1.35);
 });
