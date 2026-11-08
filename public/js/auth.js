@@ -29,7 +29,7 @@ const db = getFirestore(app);
 // Blockix tem ranking próprio desde a Etapa 3a; recorde_tetris fica guardado no banco.
 const CAMPOS_RECORDE = {
     blockix: 'recorde_blockix', tetris: 'recorde_tetris',
-    snake: 'recorde_snake', breakout: 'recorde_breakout_v2',
+    snake: 'recorde_snake_v2', breakout: 'recorde_breakout_v2',
 };
 const jogoDaPagina = document.body.dataset.jogo;
 
@@ -154,7 +154,7 @@ registerForm?.addEventListener('submit', async (e) => {
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, senha);
         await setDoc(doc(db, 'usuarios', cred.user.uid), {
-            nome, email, recorde_blockix: 0, recorde_snake: 0, recorde_tetris: 0, recorde_breakout: 0, recorde_breakout_v2: 0,
+            nome, email, recorde_blockix: 0, recorde_snake: 0, recorde_tetris: 0, recorde_breakout: 0, recorde_breakout_v2: 0, recorde_snake_v2: 0,
         });
         await sendEmailVerification(cred.user);
         await signOut(auth);
@@ -232,5 +232,5 @@ async function carregarRanking(campo, idTabela) {
 }
 
 carregarRanking('recorde_blockix', 'rankingBlockix');
-carregarRanking('recorde_snake', 'rankingSnake');
+carregarRanking('recorde_snake_v2', 'rankingSnake');
 carregarRanking('recorde_breakout_v2', 'rankingBreakout');

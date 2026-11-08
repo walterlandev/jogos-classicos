@@ -28,9 +28,9 @@
     <main class="jogo" style="--proporcao: 1; --largura-max: 640px">
         <section class="placar" aria-label="Placar">
             <dl class="placar-lista">
-                <div class="placar-item"><dt>Pontos</dt><dd id="pontos">0</dd></div>
-                <div class="placar-item"><dt>Nível</dt><dd id="nivel">1</dd></div>
-                <div class="placar-item"><dt>Recorde</dt><dd id="userScore">—</dd></div>
+                <div class="placar-item"><dt>Pontos</dt><dd><span id="pontos">0</span><small class="placar-extra">Recorde <span id="userScore">—</span></small></dd></div>
+                <div class="placar-item"><dt>Fase</dt><dd><span id="fase">1</span><small class="placar-extra">Frutas <span id="frutas">0/10</span></small></dd></div>
+                <div class="placar-item"><dt>Vidas</dt><dd id="vidas">3</dd></div>
             </dl>
             <button class="botao so-pc" type="button" data-acao="pausa">Pausar (P)</button>
         </section>
@@ -38,11 +38,15 @@
         <div class="campo">
             <div class="tela">
                 <canvas id="snakeGame" width="400" height="400" role="img" aria-label="Campo do Snake"></canvas>
+                <p class="aviso-jogo" id="avisoJogo" aria-live="polite"></p>
                 <div class="camada" id="camadaInicio">
                     <p class="camada-titulo">Snake</p>
                     <div class="fim-de-jogo" role="status" hidden></div>
+                    <label class="seletor-nivel">Começar na fase
+                        <select id="faseInicial"><option value="1">1</option></select>
+                    </label>
                     <button class="botao botao-primario" type="button" id="botaoJogar">Jogar</button>
-                    <p class="dica"><span class="so-pc">Setas ou WASD mudam a direção, P pausa.</span><span class="so-toque">Use a cruz abaixo do campo.</span></p>
+                    <p class="dica"><span class="so-pc">Setas ou WASD mudam a direção, P pausa. Coma as frutas da meta para passar de fase.</span><span class="so-toque">Deslize o dedo no campo ou use a cruz.</span></p>
                 </div>
                 <div class="camada" id="camadaPausa" hidden>
                     <p class="camada-titulo">Pausado</p>
