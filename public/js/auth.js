@@ -26,9 +26,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// O Blockix guarda no campo antigo do "Tetris" (ranking preservado).
+// Blockix tem ranking próprio desde a Etapa 3a; recorde_tetris fica guardado no banco.
 const CAMPOS_RECORDE = {
-    blockix: 'recorde_tetris', tetris: 'recorde_tetris',
+    blockix: 'recorde_blockix', tetris: 'recorde_tetris',
     snake: 'recorde_snake', breakout: 'recorde_breakout',
 };
 const jogoDaPagina = document.body.dataset.jogo;
@@ -63,6 +63,7 @@ onAuthStateChanged(auth, async (user) => {
         if (dados.tema && podeUsar(dados.tema, dados.itens_liberados)) {
             aplicarTema(dados.tema, { origem: 'perfil' });
         }
+        window.dispatchEvent(new CustomEvent('perfilcarregado', { detail: dados }));
     } else {
         document.querySelectorAll('[data-recorde]').forEach(n => texto(n, '—'));
         definirItensLiberados([]);
@@ -105,6 +106,22 @@ window.salvarRecordeDB = async (pontosFeitos, tipoJogo = jogoDaPagina) => {
     }
 };
 
+// Maior nível alcançado (libera níveis iniciais). Só sobe.
+window.salvarNivelMaxDB = async (jogo, nivel) => {
+    const user = auth.currentUser;
+    if (!user || !/^[a-z]+$/.test(jogo) || !Number.isFinite(nivel)) return;
+    const campo = `nivel_max_${jogo}`;
+    try {
+        const ref = doc(db, 'usuarios', user.uid);
+        const snap = await getDoc(ref);
+        if (snap.exists() && nivel > (Number(snap.data()[campo]) || 0)) {
+            await updateDoc(ref, { [campo]: nivel });
+        }
+    } catch (e) {
+        console.error('Erro ao salvar o nível máximo:', e);
+    }
+};
+
 // --- Formulários (mensagens dentro do diálogo, sem alert) ---
 const ERROS = {
     'auth/email-already-in-use': 'Já existe uma conta com este e-mail. Use "Entrar".',
@@ -137,7 +154,7 @@ registerForm?.addEventListener('submit', async (e) => {
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, senha);
         await setDoc(doc(db, 'usuarios', cred.user.uid), {
-            nome, email, recorde_snake: 0, recorde_tetris: 0, recorde_breakout: 0,
+            nome, email, recorde_blockix: 0, recorde_snake: 0, recorde_tetris: 0, recorde_breakout: 0,
         });
         await sendEmailVerification(cred.user);
         await signOut(auth);
@@ -214,6 +231,6 @@ async function carregarRanking(campo, idTabela) {
     }
 }
 
-carregarRanking('recorde_tetris', 'rankingBlockix');
+carregarRanking('recorde_blockix', 'rankingBlockix');
 carregarRanking('recorde_snake', 'rankingSnake');
 carregarRanking('recorde_breakout', 'rankingBreakout');

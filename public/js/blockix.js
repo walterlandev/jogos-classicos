@@ -1,94 +1,159 @@
 /* ==========================================================================
-   Blockix — tela, laço e controles.
-   Regras (matriz, colisão, linhas, pontos, nível) em logica/blocos.js;
+   Blockix — tela, laço, tempo de encaixe e controles.
+   Regras (peças, colisão, linhas, pontos, nível, fantasma) em logica/blocos.js;
    cores sempre da paleta do tema atual (temas.js).
 ========================================================================== */
 import {
-    TIPOS, criarMatriz, criarPeca, girar, colide, fundir, varrerLinhas,
-    pontosPorLinhas, nivelPorLinhas, intervaloQueda,
+    criarMatriz, criarPeca, girar, colide, fundir, varrerLinhas, novoSaco,
+    pontuar, nivelPorLinhas, intervaloQueda, linhaFantasma, niveisIniciais, PONTOS_QUEDA,
 } from './logica/blocos.js';
 import { mostrarFimDeJogo, esconderFimDeJogo } from './aviso.js';
 import { paleta, aoMudarTema, ligarBotaoTema } from './temas.js';
 import { ligarToque } from './controles.js';
 
-const canvas = document.getElementById('canvas');
+const $ = (id) => document.getElementById(id);
+const canvas = $('canvas');
 const ctx = canvas.getContext('2d');
-const proxima = document.getElementById('proxima');
-const ctxProxima = proxima.getContext('2d');
-const pontosEl = document.getElementById('pontos');
-const nivelEl = document.getElementById('nivel');
-const camadaInicio = document.getElementById('camadaInicio');
-const camadaPausa = document.getElementById('camadaPausa');
+const minis = { guardada: $('guardada'), proxima: $('proxima'), fila: $('fila') };
+const camadaInicio = $('camadaInicio');
+const camadaPausa = $('camadaPausa');
 const tituloInicio = camadaInicio.querySelector('.camada-titulo');
-const botaoJogar = document.getElementById('botaoJogar');
+const botaoJogar = $('botaoJogar');
+const seletorNivel = $('nivelInicial');
+const avisoEl = $('avisoJogo');
 
 const ROWS = 20;
 const COLS = 10;
 const BLOCO = 30;
+const ENCAIXE_MS = 500;
+const MAX_REINICIOS = 15;
+const BRILHO_MS = 250;
+const CHAVE_NIVEL_MAX = 'blockix_nivel_max';
+const semMovimento = matchMedia('(prefers-reduced-motion: reduce)');
 
 /* --- Estado --- */
 let board = criarMatriz(COLS, ROWS);
-const player = { pos: { x: 0, y: 0 }, matrix: null };
-let nextPieceMatrix = null;
-
-let score = 0;
-let level = 1;
+const peca = { tipo: null, matriz: null, pos: { x: 0, y: 0 } };
+let fila = [];
+let guardada = null;
+let podeGuardar = true;
+let pontos = 0;
 let linhas = 0;
-let dropCounter = 0;
-let dropInterval = intervaloQueda(1);
-let lastTime = null; // null = o próximo quadro zera o relógio
+let nivel = 1;
+let nivelInicial = 1;
+let nivelMax = lerNivelMaxLocal();
+let estadoPontos = { combo: -1, b2b: false };
+let quedaMs = 0;
+let encaixeMs = 0;
+let reinicios = 0;
+let brilho = null; // { ys: [...], desde: ms }
+let lastTime = null;
 let isPaused = false;
 let isGameOver = true;
 let requestId = null;
+let avisoTimer = null;
 
-const pecaAleatoria = () => criarPeca(TIPOS[Math.floor(Math.random() * TIPOS.length)]);
-
-/* --- Jogador --- */
-function playerReset() {
-    player.matrix = nextPieceMatrix ?? pecaAleatoria();
-    nextPieceMatrix = pecaAleatoria();
-    player.pos.y = 0;
-    player.pos.x = Math.floor(COLS / 2) - Math.floor(player.matrix[0].length / 2);
-    drawNextPiece();
-    if (colide(board, player.matrix, player.pos)) gameOver();
+function lerNivelMaxLocal() {
+    try { return Math.max(1, Number(localStorage.getItem(CHAVE_NIVEL_MAX)) || 1); } catch { return 1; }
 }
 
-function playerRotate() {
-    const girada = girar(player.matrix);
-    const deslocamentos = girada.length === 4 ? [0, 1, -1, 2, -2, 3, -3] : [0, 1, -1, 2, -2];
-    for (const dx of deslocamentos) {
-        const pos = { x: player.pos.x + dx, y: player.pos.y };
-        if (!colide(board, girada, pos)) {
-            player.matrix = girada;
-            player.pos = pos;
-            return;
+/* --- Peças e fila (saco de 7) --- */
+function proximaDaFila() {
+    while (fila.length < 4) fila.push(...novoSaco());
+    return fila.shift();
+}
+
+function nascer(tipo) {
+    peca.tipo = tipo;
+    peca.matriz = criarPeca(tipo);
+    peca.pos = { x: Math.floor(COLS / 2) - Math.floor(peca.matriz[0].length / 2), y: 0 };
+    encaixeMs = 0;
+    reinicios = 0;
+    quedaMs = 0;
+    while (fila.length < 4) fila.push(...novoSaco());
+    desenharMinis();
+    if (colide(board, peca.matriz, peca.pos)) gameOver();
+}
+
+const noChao = () => colide(board, peca.matriz, { x: peca.pos.x, y: peca.pos.y + 1 });
+
+// Mexer a peça no chão dá mais tempo para encaixar (até MAX_REINICIOS vezes).
+function depoisDeMexer() {
+    if (noChao() && reinicios < MAX_REINICIOS) {
+        encaixeMs = 0;
+        reinicios++;
+    }
+}
+
+function mover(dx) {
+    const pos = { x: peca.pos.x + dx, y: peca.pos.y };
+    if (colide(board, peca.matriz, pos)) return;
+    peca.pos = pos;
+    depoisDeMexer();
+}
+
+function rodar(vezes = 1) {
+    let girada = peca.matriz;
+    for (let i = 0; i < vezes; i++) girada = girar(girada);
+    const chutes = girada.length === 4 ? [0, 1, -1, 2, -2] : [0, 1, -1];
+    for (const dy of [0, -1]) {            // tenta no lugar e, se preciso, uma linha acima
+        for (const dx of chutes) {
+            const pos = { x: peca.pos.x + dx, y: peca.pos.y + dy };
+            if (!colide(board, girada, pos)) {
+                peca.matriz = girada;
+                peca.pos = pos;
+                depoisDeMexer();
+                return;
+            }
         }
     }
 }
 
-function playerMove(dir) {
-    const pos = { x: player.pos.x + dir, y: player.pos.y };
-    if (!colide(board, player.matrix, pos)) player.pos = pos;
+function descer() {
+    if (noChao()) return travar();
+    peca.pos = { x: peca.pos.x, y: peca.pos.y + 1 };
+    pontos += PONTOS_QUEDA.suave;
+    quedaMs = 0;
+    atualizarPlacar();
 }
 
-function playerDrop() {
-    const pos = { x: player.pos.x, y: player.pos.y + 1 };
-    if (colide(board, player.matrix, pos)) {
-        fundir(board, player.matrix, player.pos);
-        // Apaga as linhas ANTES de nascer a peça nova (senão o jogo acaba à toa).
-        const removidas = varrerLinhas(board);
-        if (removidas > 0) {
-            linhas += removidas;
-            score += pontosPorLinhas(removidas, level);
-            level = nivelPorLinhas(linhas);
-            dropInterval = intervaloQueda(level);
-            updateHUD();
-        }
-        playerReset();
-    } else {
-        player.pos = pos;
+function cair() {
+    const y = linhaFantasma(board, peca.matriz, peca.pos);
+    pontos += (y - peca.pos.y) * PONTOS_QUEDA.instantanea;
+    peca.pos = { x: peca.pos.x, y };
+    travar();
+}
+
+function guardar() {
+    if (!podeGuardar) return;
+    const atual = peca.tipo;
+    if (guardada) nascer(guardada);
+    else nascer(proximaDaFila());
+    guardada = atual;
+    podeGuardar = false;
+    desenharMinis();
+}
+
+function travar() {
+    fundir(board, peca.matriz, peca.pos);
+    const cheias = board.flatMap((linha, y) => (linha.every(v => v !== 0) ? [y] : []));
+    const removidas = varrerLinhas(board);
+    const nivelAntes = nivel;
+    const r = pontuar(removidas, nivel, estadoPontos);
+    estadoPontos = { combo: r.combo, b2b: r.b2b };
+    pontos += r.pontos;
+    if (removidas > 0) {
+        linhas += removidas;
+        nivel = nivelPorLinhas(linhas, nivelInicial);
+        if (!semMovimento.matches) brilho = { ys: cheias, desde: performance.now() };
+        if (nivel > nivelAntes) avisar(`Nível ${nivel}`);
+        else if (r.quatroSeguidas) avisar('Quatro linhas seguidas!');
+        else if (removidas === 4) avisar('Quatro linhas!');
+        else if (r.combo >= 2) avisar(`Combo ×${r.combo}`);
     }
-    dropCounter = 0;
+    podeGuardar = true;
+    atualizarPlacar();
+    nascer(proximaDaFila());
 }
 
 /* --- Desenho --- */
@@ -97,55 +162,107 @@ function celula(context, x, y, tamanho, cor) {
     context.fillRect(x * tamanho + 1, y * tamanho + 1, tamanho - 2, tamanho - 2);
 }
 
-function draw() {
+function draw(agora = performance.now()) {
     const p = paleta();
+    ctx.globalAlpha = 1;
     ctx.fillStyle = p.fundo;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     board.forEach((row, y) => row.forEach((v, x) => {
         if (v) celula(ctx, x, y, BLOCO, p.pecas[v]);
         else if (p.vazio) celula(ctx, x, y, BLOCO, p.vazio);
     }));
-    if (player.matrix) {
-        player.matrix.forEach((row, y) => row.forEach((v, x) => {
-            if (v) celula(ctx, x + player.pos.x, y + player.pos.y, BLOCO, p.pecas[v]);
+    if (peca.matriz && !isGameOver) {
+        // Fantasma: contorno onde a peça cairia.
+        const yF = linhaFantasma(board, peca.matriz, peca.pos);
+        ctx.lineWidth = 2;
+        peca.matriz.forEach((row, y) => row.forEach((v, x) => {
+            if (!v) return;
+            ctx.strokeStyle = p.pecas[v];
+            ctx.strokeRect((x + peca.pos.x) * BLOCO + 3, (y + yF) * BLOCO + 3, BLOCO - 6, BLOCO - 6);
         }));
+    }
+    if (peca.matriz) {
+        peca.matriz.forEach((row, y) => row.forEach((v, x) => {
+            if (v) celula(ctx, x + peca.pos.x, y + peca.pos.y, BLOCO, p.pecas[v]);
+        }));
+    }
+    if (brilho) {
+        const t = (agora - brilho.desde) / BRILHO_MS;
+        if (t >= 1) brilho = null;
+        else {
+            ctx.globalAlpha = 0.75 * (1 - t);
+            ctx.fillStyle = p.texto;
+            brilho.ys.forEach(y => ctx.fillRect(0, y * BLOCO, canvas.width, BLOCO));
+            ctx.globalAlpha = 1;
+        }
     }
 }
 
-// Próxima peça centralizada no quadrinho.
-function drawNextPiece() {
+function desenharMini(cv, tipos) {
+    if (!cv) return;
+    const c = cv.getContext('2d');
     const p = paleta();
-    const { width, height } = proxima;
-    ctxProxima.fillStyle = p.fundo;
-    ctxProxima.fillRect(0, 0, width, height);
-    if (!nextPieceMatrix) return;
-    const cel = [];
-    nextPieceMatrix.forEach((row, y) => row.forEach((v, x) => { if (v) cel.push({ x, y, v }); }));
-    const minX = Math.min(...cel.map(c => c.x)), maxX = Math.max(...cel.map(c => c.x));
-    const minY = Math.min(...cel.map(c => c.y)), maxY = Math.max(...cel.map(c => c.y));
-    const bloco = Math.floor(Math.min(width, height) / 4.5);
-    const ox = (width - (maxX - minX + 1) * bloco) / 2;
-    const oy = (height - (maxY - minY + 1) * bloco) / 2;
-    cel.forEach(({ x, y, v }) => {
-        ctxProxima.fillStyle = p.pecas[v];
-        ctxProxima.fillRect(ox + (x - minX) * bloco + 1, oy + (y - minY) * bloco + 1, bloco - 2, bloco - 2);
+    c.fillStyle = p.fundo;
+    c.fillRect(0, 0, cv.width, cv.height);
+    const altura = cv.height / Math.max(1, tipos.length);
+    const bloco = Math.floor(Math.min(cv.width, altura) / 4.5);
+    tipos.forEach((tipo, i) => {
+        if (!tipo) return;
+        const cel = [];
+        criarPeca(tipo).forEach((row, y) => row.forEach((v, x) => { if (v) cel.push({ x, y, v }); }));
+        const minX = Math.min(...cel.map(k => k.x)), maxX = Math.max(...cel.map(k => k.x));
+        const minY = Math.min(...cel.map(k => k.y)), maxY = Math.max(...cel.map(k => k.y));
+        const ox = (cv.width - (maxX - minX + 1) * bloco) / 2;
+        const oy = i * altura + (altura - (maxY - minY + 1) * bloco) / 2;
+        c.globalAlpha = cv === minis.guardada && !podeGuardar ? 0.4 : 1;
+        cel.forEach(({ x, y, v }) => {
+            c.fillStyle = p.pecas[v];
+            c.fillRect(ox + (x - minX) * bloco + 1, oy + (y - minY) * bloco + 1, bloco - 2, bloco - 2);
+        });
+        c.globalAlpha = 1;
     });
 }
 
-function updateHUD() {
-    pontosEl.textContent = score;
-    nivelEl.textContent = level;
+function desenharMinis() {
+    desenharMini(minis.guardada, [guardada]);
+    desenharMini(minis.proxima, [fila[0]]);
+    desenharMini(minis.fila, [fila[1], fila[2]]);
+}
+
+function atualizarPlacar() {
+    $('pontos').textContent = pontos;
+    $('nivel').textContent = nivel;
+    $('linhas').textContent = linhas;
+}
+
+function avisar(texto) {
+    avisoEl.textContent = texto;
+    avisoEl.classList.add('visivel');
+    clearTimeout(avisoTimer);
+    avisoTimer = setTimeout(() => avisoEl.classList.remove('visivel'), 1100);
 }
 
 /* --- Laço (só pelo requestAnimationFrame, com tempo real) --- */
 function update(time) {
     if (isPaused || isGameOver) return;
     if (lastTime === null) lastTime = time;
-    dropCounter += time - lastTime;
+    const dt = Math.min(time - lastTime, 100);
     lastTime = time;
-    if (dropCounter > dropInterval) playerDrop();
+
+    if (noChao()) {
+        encaixeMs += dt;
+        if (encaixeMs >= ENCAIXE_MS) travar();
+    } else {
+        encaixeMs = 0;
+        quedaMs += dt;
+        const intervalo = intervaloQueda(nivel);
+        while (quedaMs >= intervalo && !noChao()) {
+            peca.pos = { x: peca.pos.x, y: peca.pos.y + 1 };
+            quedaMs -= intervalo;
+        }
+    }
     if (isGameOver) return;
-    draw();
+    draw(time);
     requestId = requestAnimationFrame(update);
 }
 
@@ -155,23 +272,46 @@ function agendarLaco() {
     requestId = requestAnimationFrame(update);
 }
 
+/* --- Nível inicial --- */
+function montarSeletorNivel() {
+    const escolhido = Number(seletorNivel.value) || 1;
+    seletorNivel.replaceChildren(...niveisIniciais(nivelMax).map(n => {
+        const o = document.createElement('option');
+        o.value = n;
+        o.textContent = n;
+        return o;
+    }));
+    seletorNivel.value = niveisIniciais(nivelMax).includes(escolhido) ? escolhido : 1;
+}
+
+function registrarNivelMax() {
+    if (nivel <= nivelMax) return;
+    nivelMax = nivel;
+    try { localStorage.setItem(CHAVE_NIVEL_MAX, String(nivelMax)); } catch { /* navegação privada */ }
+    window.salvarNivelMaxDB?.('blockix', nivelMax);
+    montarSeletorNivel();
+}
+
 /* --- Partida --- */
 function startGame() {
     if (!isGameOver) return;
     board = criarMatriz(COLS, ROWS);
-    score = 0;
-    level = 1;
+    fila = [];
+    guardada = null;
+    podeGuardar = true;
+    pontos = 0;
     linhas = 0;
-    dropCounter = 0;
-    dropInterval = intervaloQueda(1);
-    nextPieceMatrix = null;
+    nivelInicial = Number(seletorNivel.value) || 1;
+    nivel = nivelInicial;
+    estadoPontos = { combo: -1, b2b: false };
+    brilho = null;
     isGameOver = false;
     isPaused = false;
     camadaInicio.hidden = true;
     camadaPausa.hidden = true;
     esconderFimDeJogo(camadaInicio);
-    playerReset();
-    updateHUD();
+    atualizarPlacar();
+    nascer(proximaDaFila());
     agendarLaco();
 }
 
@@ -191,27 +331,33 @@ async function gameOver() {
     isGameOver = true;
     cancelAnimationFrame(requestId);
     draw();
-    const pontos = score;
+    registrarNivelMax();
+    const total = pontos;
     tituloInicio.textContent = 'Fim de jogo';
     botaoJogar.textContent = 'Jogar de novo';
-    mostrarFimDeJogo(camadaInicio, { pontos, recordeNovo: false });
+    mostrarFimDeJogo(camadaInicio, { detalhe: `Nível ${nivel}, ${linhas} linhas`, pontos: total, recordeNovo: false });
     camadaInicio.hidden = false;
     botaoJogar.focus();
-    const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(pontos, 'blockix') : false;
-    if (recordeNovo && isGameOver) mostrarFimDeJogo(camadaInicio, { pontos, recordeNovo });
-}
-
-function acao(nome) {
-    if (nome === 'pausa') return togglePause();
-    if (isGameOver || isPaused) return;
-    if (nome === 'left') playerMove(-1);
-    if (nome === 'right') playerMove(1);
-    if (nome === 'down') playerDrop();
-    if (nome === 'rotate') playerRotate();
-    if (!isGameOver) draw();
+    const recordeNovo = window.salvarRecordeDB ? await window.salvarRecordeDB(total, 'blockix') : false;
+    if (recordeNovo && isGameOver) {
+        mostrarFimDeJogo(camadaInicio, { detalhe: `Nível ${nivel}, ${linhas} linhas`, pontos: total, recordeNovo });
+    }
 }
 
 /* --- Controles --- */
+function acao(nome) {
+    if (nome === 'pausa') return togglePause();
+    if (isGameOver || isPaused) return;
+    if (nome === 'left') mover(-1);
+    else if (nome === 'right') mover(1);
+    else if (nome === 'down') descer();
+    else if (nome === 'rotate') rodar(1);
+    else if (nome === 'rotate-ccw') rodar(3);
+    else if (nome === 'drop') cair();
+    else if (nome === 'hold') guardar();
+    if (!isGameOver) draw();
+}
+
 botaoJogar.addEventListener('click', startGame);
 document.querySelectorAll('[data-acao]').forEach(botao => {
     const nome = botao.dataset.acao;
@@ -223,7 +369,9 @@ document.querySelectorAll('[data-acao]').forEach(botao => {
 });
 
 const TECLAS = {
-    ArrowLeft: 'left', ArrowRight: 'right', ArrowDown: 'down', ArrowUp: 'rotate', r: 'rotate', R: 'rotate',
+    ArrowLeft: 'left', ArrowRight: 'right', ArrowDown: 'down',
+    ArrowUp: 'rotate', x: 'rotate', X: 'rotate', z: 'rotate-ccw', Z: 'rotate-ccw',
+    ' ': 'drop', c: 'hold', C: 'hold', Shift: 'hold',
 };
 document.addEventListener('keydown', e => {
     if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
@@ -231,13 +379,26 @@ document.addEventListener('keydown', e => {
         return;
     }
     const nome = TECLAS[e.key];
-    if (nome && !isGameOver) {
-        e.preventDefault(); // setas não rolam a página durante o jogo
-        acao(nome);
+    if (!nome || isGameOver) return;
+    e.preventDefault(); // setas e espaço não rolam a página durante o jogo
+    if (e.repeat && (nome === 'drop' || nome === 'hold' || nome.startsWith('rotate'))) return;
+    acao(nome);
+});
+
+// Nível máximo do perfil (outro aparelho) soma com o deste navegador.
+window.addEventListener('perfilcarregado', e => {
+    const doPerfil = Number(e.detail?.nivel_max_blockix) || 1;
+    if (doPerfil > nivelMax) {
+        nivelMax = doPerfil;
+        try { localStorage.setItem(CHAVE_NIVEL_MAX, String(nivelMax)); } catch { /* navegação privada */ }
+        montarSeletorNivel();
+    } else if (nivelMax > doPerfil) {
+        window.salvarNivelMaxDB?.('blockix', nivelMax);
     }
 });
 
-ligarBotaoTema(document.getElementById('botaoTema'));
-aoMudarTema(() => { draw(); drawNextPiece(); });
+ligarBotaoTema($('botaoTema'));
+aoMudarTema(() => { draw(); desenharMinis(); });
+montarSeletorNivel();
 draw();
-drawNextPiece();
+desenharMinis();

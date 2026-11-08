@@ -271,7 +271,7 @@ dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var
     font-family: var(--fonte-numero, var(--fonte-titulo)); font-size: 22px; line-height: 1.25;
     font-variant-numeric: tabular-nums;
 }
-.placar-item canvas { width: 44px; height: 44px; image-rendering: pixelated; }
+.placar-item canvas { width: 44px; height: auto; image-rendering: pixelated; } /* height auto: mantém a proporção do canvas */
 .so-pc { display: none; }
 .so-toque { display: inline; }
 
@@ -309,6 +309,8 @@ dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var
 .fim-de-jogo p { margin: 0; }
 .fim-de-jogo .fim-titulo { font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400); font-size: 22px; }
 .fim-de-jogo .fim-recorde { color: var(--fim-destaque); font-weight: 700; }
+.fim-de-jogo .fim-pontos { font-family: var(--fonte-numero, var(--fonte-titulo)); font-size: 22px; font-variant-numeric: tabular-nums; }
+.fim-de-jogo .fim-detalhe { font-size: 14px; }
 
 .controles {
     grid-area: controles;
@@ -336,6 +338,36 @@ dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var
 .cruz .direita { grid-area: 2 / 3; }
 .cruz .baixo { grid-area: 3 / 2; }
 
+.placar-extra {
+    display: block; margin-top: 2px;
+    font-family: var(--fonte-texto); font-size: 13px; line-height: 1.2;
+    color: var(--placar-rotulo); font-variant-numeric: tabular-nums;
+}
+.so-pc-bloco { display: none; }
+
+/* Aviso curto dentro do campo (nível, combo); some sozinho. */
+.aviso-jogo {
+    position: absolute; top: 10%; left: 50%; z-index: 2;
+    transform: translate(-50%, -6px);
+    padding: 8px 14px; white-space: nowrap; pointer-events: none;
+    background: var(--aviso-fundo, var(--fim-fundo)); color: var(--aviso-texto, var(--fim-texto));
+    border: var(--fim-borda); border-radius: var(--placar-raio);
+    font-family: var(--fonte-titulo); font-weight: var(--peso-titulo, 400); font-size: 18px;
+    opacity: 0; transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+.aviso-jogo.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+.seletor-nivel { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.seletor-nivel select {
+    min-height: 44px; padding: 6px 10px; font: inherit;
+    background: var(--entrada-fundo); color: var(--entrada-texto);
+    border: var(--entrada-borda); border-radius: var(--raio-entrada, 6px);
+}
+
+.controles-duplos { flex-direction: column; gap: 8px; }
+.controles-duplos .linha { display: flex; justify-content: center; gap: 10px; }
+.controle-largo.controle-pequeno { width: 112px; }
+
 /* PC com mouse: campo no centro, placar ao lado, sem botões de toque. */
 @media (min-width: 900px) and (pointer: fine) {
     .jogo {
@@ -353,8 +385,9 @@ dialog h2 { margin: 0 0 16px; font-family: var(--fonte-titulo); font-weight: var
     .placar-lista { grid-template-columns: 1fr; }
     .placar-item { padding: 10px 14px; }
     .placar-item dd { font-size: 28px; }
-    .placar-item canvas { width: 72px; height: 72px; }
+    .placar-item canvas { width: 72px; }
     .so-pc { display: inline-flex; }
     .so-toque { display: none; }
+    .so-pc-bloco { display: grid; }
     .controles { display: none; }
 }

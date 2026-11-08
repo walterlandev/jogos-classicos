@@ -28,10 +28,11 @@
     <main class="jogo" style="--proporcao: 0.5; --largura-max: 400px">
         <section class="placar" aria-label="Placar">
             <dl class="placar-lista">
-                <div class="placar-item"><dt>Pontos</dt><dd id="pontos">0</dd></div>
-                <div class="placar-item"><dt>Nível</dt><dd id="nivel">1</dd></div>
-                <div class="placar-item"><dt>Recorde</dt><dd id="userScore">—</dd></div>
+                <div class="placar-item"><dt>Pontos</dt><dd><span id="pontos">0</span><small class="placar-extra">Recorde <span id="userScore">—</span></small></dd></div>
+                <div class="placar-item"><dt>Nível</dt><dd><span id="nivel">1</span><small class="placar-extra"><span id="linhas">0</span> linhas</small></dd></div>
+                <div class="placar-item"><dt>Guardada</dt><dd><canvas id="guardada" width="80" height="80" role="img" aria-label="Peça guardada"></canvas></dd></div>
                 <div class="placar-item"><dt>Próxima</dt><dd><canvas id="proxima" width="80" height="80" role="img" aria-label="Próxima peça"></canvas></dd></div>
+                <div class="placar-item so-pc-bloco"><dt>Depois</dt><dd><canvas id="fila" width="80" height="150" role="img" aria-label="Peças seguintes"></canvas></dd></div>
             </dl>
             <button class="botao so-pc" type="button" data-acao="pausa">Pausar (P)</button>
         </section>
@@ -39,11 +40,15 @@
         <div class="campo">
             <div class="tela">
                 <canvas id="canvas" width="300" height="600" role="img" aria-label="Campo do Blockix"></canvas>
+                <p class="aviso-jogo" id="avisoJogo" aria-live="polite"></p>
                 <div class="camada" id="camadaInicio">
                     <p class="camada-titulo">Blockix</p>
                     <div class="fim-de-jogo" role="status" hidden></div>
+                    <label class="seletor-nivel">Começar no nível
+                        <select id="nivelInicial"><option value="1">1</option></select>
+                    </label>
                     <button class="botao botao-primario" type="button" id="botaoJogar">Jogar</button>
-                    <p class="dica"><span class="so-pc">Setas movem, seta para cima gira, P pausa.</span><span class="so-toque">Use os botões abaixo do campo.</span></p>
+                    <p class="dica"><span class="so-pc">Setas movem, seta para cima ou X gira, Z gira ao contrário, Espaço cai, C guarda, P pausa.</span><span class="so-toque">Segure as setas para repetir o movimento.</span></p>
                 </div>
                 <div class="camada" id="camadaPausa" hidden>
                     <p class="camada-titulo">Pausado</p>
@@ -52,22 +57,32 @@
             </div>
         </div>
 
-        <div class="controles">
-            <button class="controle" type="button" data-acao="left" aria-label="Mover para a esquerda">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-            </button>
-            <button class="controle" type="button" data-acao="down" aria-label="Descer">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
-            </button>
-            <button class="controle" type="button" data-acao="right" aria-label="Mover para a direita">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-            </button>
-            <button class="controle" type="button" data-acao="rotate" aria-label="Girar">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5"/></svg>
-            </button>
-            <button class="controle controle-pequeno" type="button" data-acao="pausa" aria-label="Pausar">
-                <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
-            </button>
+        <div class="controles controles-duplos">
+            <div class="linha">
+                <button class="controle controle-pequeno" type="button" data-acao="hold" aria-label="Guardar peça">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M12 3v9M8.5 8.5L12 12l3.5-3.5"/></svg>
+                </button>
+                <button class="controle controle-pequeno" type="button" data-acao="pausa" aria-label="Pausar">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v14M15 5v14"/></svg>
+                </button>
+                <button class="controle controle-pequeno controle-largo" type="button" data-acao="drop" aria-label="Cair de uma vez">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l6 6 6-6M6 11l6 6 6-6M5 21h14"/></svg>
+                </button>
+            </div>
+            <div class="linha">
+                <button class="controle" type="button" data-acao="left" aria-label="Mover para a esquerda">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+                </button>
+                <button class="controle" type="button" data-acao="down" aria-label="Descer">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9l7 7 7-7"/></svg>
+                </button>
+                <button class="controle" type="button" data-acao="right" aria-label="Mover para a direita">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+                </button>
+                <button class="controle" type="button" data-acao="rotate" aria-label="Girar">
+                    <svg class="icone" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4v5h-5"/></svg>
+                </button>
+            </div>
         </div>
     </main>
 
