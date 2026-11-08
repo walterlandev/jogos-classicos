@@ -3,7 +3,7 @@
 Resumo curto para começar uma sessão sem ler tudo. Regras de trabalho:
 `CLAUDE.md`. Notas e diário: Obsidian, `wasobsidia/Projetos/Jogos Clássicos/`.
 
-Atualizado em: 08/11/2026 (Etapa 3a — Blockix — concluída).
+Atualizado em: 08/11/2026 (Etapa 3b — Breakout — concluída).
 
 ## O que é
 
@@ -20,7 +20,7 @@ email e senha, recorde por jogo e ranking dos 10 melhores, no Firebase.
 | Comuns dos jogos | `js/aviso.js` (fim de jogo), `js/controles.js` (toque) |
 | Blockix | `public/blockix.html`, `js/blockix.js`, `js/logica/blocos.js` |
 | Snake | `public/snake.html`, `js/snake.js`, `js/logica/cobra.js` |
-| Breakout | `public/breakout.html`, `js/breakout.js`, `js/logica/bola.js` |
+| Breakout | `public/breakout.html`, `js/breakout.js`, `js/logica/breakout.js`, `js/logica/bola.js` |
 | Testes | `tests/*.test.js` (`npm test`) |
 | Hospedagem | `firebase.json`, `.firebaserc` (projeto `jogos-classicos`) |
 | Plano de melhoria | `docs/superpowers/specs/2026-11-08-melhoria-jogos-design.md` (roteiro das etapas) |
@@ -39,8 +39,12 @@ email e senha, recorde por jogo e ranking dos 10 melhores, no Firebase.
   instantânea, fila de 3, tempo de encaixe, pontuação 100/300/500/800 com
   combos e quatro seguidas, curva de velocidade até o nível 20, Maratona,
   nível inicial liberado jogando. Ranking novo em `recorde_blockix`.
-- Próxima: **Etapa 3b (Breakout)** — vidas, 20 fases, tijolos resistentes,
-  power-ups, campo em pé no celular. Depois **3c (Snake)**.
+- **Etapa 3b (Breakout) feita:** campo em pé 400×560 em todo aparelho,
+  raquete pelo dedo/mouse, 3 vidas (+1 a cada 10.000), 20 fases desenhadas
+  + geradas sem fim, tijolos de 1–3 golpes e indestrutíveis, power-ups
+  (larga, multibola, lenta, vida), fase inicial liberada. Ranking novo em
+  `recorde_breakout_v2`.
+- Próxima: **Etapa 3c (Snake)** — fases com mapas e obstáculos.
 
 ## Pendências
 
