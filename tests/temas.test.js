@@ -11,7 +11,7 @@ test('os três temas existem, são grátis e têm paleta completa', () => {
         assert.equal(c.pecas.length, 8);
         assert.equal(c.tijolos.length, 5);
         assert.equal(c.bonus.length, 2);
-        for (const k of ['fundo', 'cobra', 'cabeca', 'comida', 'bola', 'raquete', 'texto'])
+        for (const k of ['fundo', 'cobra', 'cabeca', 'comida', 'bola', 'raquete', 'texto', 'parede'])
             assert.match(c[k], /^#[0-9a-f]{6}$/i, `${id}.${k}`);
     }
 });

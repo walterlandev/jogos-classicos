@@ -17,7 +17,7 @@ export const TEMAS = {
             pecas: [null, '#4aa3ff', '#c56cf0', '#d7262e', '#3fbf6a', '#ff8a2a', '#e9edf2', '#f6c026'],
             cobra: '#f6c026', cabeca: '#e9edf2', comida: '#d7262e', bonus: ['#f6c026', '#ff8a2a'],
             tijolos: ['#d7262e', '#ff8a2a', '#f6c026', '#3fbf6a', '#4aa3ff'],
-            bola: '#e9edf2', raquete: '#f6c026', texto: '#e9edf2',
+            bola: '#e9edf2', raquete: '#f6c026', texto: '#e9edf2', parede: '#8a5a33',
         },
     },
     cartucho: {
@@ -31,7 +31,7 @@ export const TEMAS = {
             pecas: [null, '#3b5bff', '#f04e30', '#f2b807', '#2e9e5b', '#e4e7ec', '#ff7ab6', '#00b3c7'],
             cobra: '#2e9e5b', cabeca: '#e4e7ec', comida: '#f04e30', bonus: ['#f2b807', '#3b5bff'],
             tijolos: ['#f04e30', '#f2b807', '#2e9e5b', '#3b5bff', '#e4e7ec'],
-            bola: '#e4e7ec', raquete: '#f2b807', texto: '#e4e7ec',
+            bola: '#e4e7ec', raquete: '#f2b807', texto: '#e4e7ec', parede: '#6b7080',
         },
     },
     lcd: {
@@ -45,7 +45,7 @@ export const TEMAS = {
             pecas: [null, '#26301f', '#26301f', '#26301f', '#26301f', '#26301f', '#26301f', '#26301f'],
             cobra: '#26301f', cabeca: '#26301f', comida: '#26301f', bonus: ['#26301f', '#6b7a5e'],
             tijolos: ['#26301f', '#26301f', '#26301f', '#26301f', '#26301f'],
-            bola: '#26301f', raquete: '#26301f', texto: '#26301f',
+            bola: '#26301f', raquete: '#26301f', texto: '#26301f', parede: '#5d6b52',
         },
     },
 };
