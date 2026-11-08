@@ -47,18 +47,18 @@ onAuthStateChanged(auth, async (user) => {
         const userDoc = await getDoc(doc(db, "usuarios", user.uid));
         if (userDoc.exists()) {
             const dados = userDoc.data();
-            if (userNameEl) userNameEl.innerText = dados.nome || "Jogador";
+            if (userNameEl) userNameEl.textContent = dados.nome || "Jogador";
             
             // Lógica para mostrar o recorde certo dependendo da página
             if (userScoreEl) {
                 const url = window.location.href.toLowerCase();
                 if (url.includes("snake")) {
-                    userScoreEl.innerText = dados.recorde_snake || 0;
+                    userScoreEl.textContent = dados.recorde_snake || 0;
                 } else if (url.includes("breakout")) {
-                    userScoreEl.innerText = dados.recorde_breakout || 0;
+                    userScoreEl.textContent = dados.recorde_breakout || 0;
                 } else {
                     // Assume Tetris como padrão ou index
-                    userScoreEl.innerText = dados.recorde_tetris || 0;
+                    userScoreEl.textContent = dados.recorde_tetris || 0;
                 }
             }
             
@@ -73,43 +73,26 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // --- SALVAR RECORDES (UNIFICADO) ---
-// Agora aceita 'snake', 'tetris' ou 'breakout' como parametro tipoJogo
-window.salvarRecordeDB = async (pontosFeitos, tipoJogo) => {
+// Devolve true quando a pontuação virou recorde novo. Não recarrega a página.
+const CAMPOS_RECORDE = { tetris: 'recorde_tetris', snake: 'recorde_snake', breakout: 'recorde_breakout' };
+
+window.salvarRecordeDB = async (pontosFeitos, tipoJogo = 'tetris') => {
     const user = auth.currentUser;
-    if (!user) return; // Se não tiver logado, não salva
-
-    // Define qual campo do banco de dados vamos atualizar
-    let campoRecorde = "";
-    if (tipoJogo === "snake" || tipoJogo === "usuarios_snake") {
-        campoRecorde = "recorde_snake";
-    } else if (tipoJogo === "breakout" || tipoJogo === "usuarios_breakout") {
-        campoRecorde = "recorde_breakout";
-    } else {
-        campoRecorde = "recorde_tetris";
-    }
-
-    const userRef = doc(db, "usuarios", user.uid);
-
+    const campo = CAMPOS_RECORDE[tipoJogo];
+    if (!user || !campo || !Number.isFinite(pontosFeitos)) return false;
     try {
+        const userRef = doc(db, 'usuarios', user.uid);
         const snap = await getDoc(userRef);
-        if (snap.exists()) {
-            const dados = snap.data();
-            // Pega o recorde atual ou 0 se o campo ainda não existir
-            const recordeAtual = dados[campoRecorde] || 0;
-
-            // Só atualiza se a pontuação atual for maior que o recorde do banco
-            if (pontosFeitos > recordeAtual) {
-                await updateDoc(userRef, { 
-                    [campoRecorde]: pontosFeitos,
-                    data_recorde: new Date()
-                });
-                
-                alert(`🎮 NOVO RECORDE NO ${campoRecorde.toUpperCase()}: ${pontosFeitos} pts!`);
-                window.location.reload(); 
-            }
-        }
-    } catch (e) { 
-        console.error("Erro ao salvar recorde:", e); 
+        if (!snap.exists()) return false;
+        const recordeAtual = Number(snap.data()[campo]) || 0;
+        if (pontosFeitos <= recordeAtual) return false;
+        await updateDoc(userRef, { [campo]: pontosFeitos, data_recorde: new Date() });
+        const el = document.getElementById('userScore');
+        if (el) el.textContent = pontosFeitos;
+        return true;
+    } catch (e) {
+        console.error('Erro ao salvar recorde:', e);
+        return false;
     }
 };
 
@@ -177,26 +160,29 @@ async function carregarRanking(campoOrdenacao, idTabela) {
         const q = query(collection(db, "usuarios"), orderBy(campoOrdenacao, "desc"), limit(10));
         const querySnapshot = await getDocs(q);
         
-        rankingCorpo.innerHTML = ""; 
+        const celula = (texto) => {
+            const td = document.createElement('td');
+            td.textContent = texto;
+            return td;
+        };
+        rankingCorpo.replaceChildren();
         let posicao = 1;
 
+        // Montado com textContent: o apelido nunca é interpretado como HTML.
         querySnapshot.forEach((docSnap) => {
             const dados = docSnap.data();
-            // Garante que mostre 0 se o campo não existir
-            const pontos = dados[campoOrdenacao] || 0;
-
-            rankingCorpo.innerHTML += `
-                <tr>
-                    <td>${posicao}º</td>
-                    <td>${dados.nome}</td>
-                    <td>${pontos} pts</td>
-                </tr>
-            `;
+            const tr = document.createElement('tr');
+            tr.append(
+                celula(`${posicao}º`),
+                celula(String(dados.nome ?? 'Jogador')),
+                celula(`${Number(dados[campoOrdenacao]) || 0} pts`)
+            );
+            rankingCorpo.append(tr);
             posicao++;
         });
     } catch (error) { 
         console.error("Erro ranking:", error);
-        rankingCorpo.innerHTML = "<tr><td colspan='3'>Carregando...</td></tr>";
+        rankingCorpo.innerHTML = "<tr><td colspan='3'>Ranking indisponível</td></tr>";
     }
 }
 
